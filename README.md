@@ -2,7 +2,9 @@
 
 Least-cost gravity-flow canal alignment and design.
 
-waterRoute finds the cheapest route for an open channel across a DEM between a start and a finish point, then sizes and costs the channel along that route. It also includes tools for costing pipe and electricity-transmission routes.
+waterRoute identifies least-cost gravity-flow canal alignments using iterative least-cost path optimisation and hydraulic design principles.
+The framework explicitly evaluates and costs earthworks, water losses, linear and hydraulic infrastructure, and uniquely in the publish literature incorporates cross-drainage infrastructure identification and sizing.
+Benchmarking against an independent real-world canal design produced comparable engineering outcomes, lower costs, and substantially faster assessment.
 
 ## Repository layout
 
