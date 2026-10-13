@@ -24,11 +24,8 @@ Benchmarking against an independent real-world canal design produced comparable 
 | `tests/` | Module test notebook once used durintg development |
 
 ## Installation
-
-
-
+Install the packages using mamba or conda
 ```
-TODO
 mamba env create -f waterroute/environment.yml
 mamba activate channelroute
 ```
@@ -51,10 +48,10 @@ inputs/DEM/rock_depth.tif    # rock depth raster
 The model has a flexible architecture and is modular so that users can easily adjust parameters or swap a trapezoid cross section for a different type of cross section. Open `elliot_waterroute.ipynb` and run the cells in order.
 
 1. **Settings.** Set the paths, routing bounds, Manning's n, side slope and the per-section inputs (start/finish coordinates, start elevation, diversion flow, losses), then pass them to `channel_design.configure(...)`.
-2. **Candidate designs.** `candidate_designs(section, ratios, velocities)` produces channel geometries (width:depth ratio, depth, bed width, slope) for a range of flow velocities.
+2. **Candidate designs.** `candidate_designs(section, ratios, velocities)` produces channel geometries (width:depth ratio, depth, bed width, slope) for a range of flow velocities. 
 3. **Routing.** For each design, `route_with_head_loss_iteration(...)` routes the channel across the DEM. It then recalculates the head loss and adjusts the slope. It repeats until the residual head loss is below `RESIDUAL_HEAD_LOSS_TOL_M` or `MAX_RUNS` is reached.
 
-Results are written to `run1/1_Routes/<run_name>/`. Run names encode the design, for example `v22-section1-r5-d2.10-w10.50-S20000-v0.490`. A run is skipped if its folder already exists.
+Results are written to `run1/1_Routes/<run_name>/`. Run names encode the design, for example `section1-r5-d2.10-w10.50-S20000-v0.490` for width:depth ratio 5, depth 2.1m, width 10.5m, channel slope is 1:20,000, channel velocity is 0.490 m/s. 
 
 Minimal example:
 
