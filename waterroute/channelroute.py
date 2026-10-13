@@ -1102,7 +1102,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
         leng = geodeticLineLengthInKm(l,False)
         # print(f'iterN {iterN} after adjusting leng {leng}')
         #pathDF = gpd.GeoDataFrame([l], columns=['geometry'])
-        #path_layer = ipyleaflet.GeoData(geo_dataframe=pathDF, style={'color':'black', 'weight':2})
+
 
     with open(f'{output_path}_{target_elev}_path.pkl', 'wb') as f:
         pickle.dump(path, f)
