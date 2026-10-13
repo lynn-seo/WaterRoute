@@ -5,8 +5,6 @@
 # Author:      rea095
 #
 # Created:     25/04/2012
-# Copyright:   (c) rea095 2012
-# Licence:     <your licence>
 #-------------------------------------------------------------------------------
 #!/usr/bin/env python
 
@@ -15,7 +13,7 @@ import numpy as np
 import scipy
 from scipy import ndimage
 import networkx as nx
-import flow1_c
+from tiled_flow import flow1_c
 from osgeo import gdal, gdalconst
 import sys
 

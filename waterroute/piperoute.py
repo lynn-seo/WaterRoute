@@ -60,7 +60,14 @@ def clover_GRP_IDs():
     pipe_IDs = pd.read_html('https://www.cloverpipe.com.au/product/grp-pipe-and-fittings/',header=[0,1],index_col=0)[0]['ID']['PN1, PN6 & PN10']/1000
     return pipe_IDs
 
-standard_GRP_Ds = clover_GRP_IDs()
+# Hardcoded copy of clover_GRP_IDs() so importing doesn't hit the network (checked 13/10/2026)
+standard_GRP_Ds = pd.Series(
+    [0.333, 0.411, 0.489, 0.566, 0.644, 0.721, 0.797, 0.891, 0.990, 1.085, 1.185,
+     1.284, 1.382, 1.482, 1.581, 1.678, 1.777, 1.875, 1.973, 2.956, 3.941],
+    index=[300, 375, 450, 525, 600, 675, 750, 900, 1000, 1100, 1200,
+           1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 3000, 4000],
+    name='PN1, PN6 & PN10',
+)
 
 def velocity_head(V):
     #(V**2)/(gravity*2)

@@ -50,8 +50,8 @@ from types import SimpleNamespace
 
 
 import site
-site.addsitedir(r'C:\Users\rea095\Documents\repos\ta_svn_various_tools\tiled_flow')
-import drain 
+# site.addsitedir(r'C:\Users\rea095\Documents\repos\ta_svn_various_tools\tiled_flow')
+from tiled_flow import drain 
 
 from waterroute.channel import earthworks
 
