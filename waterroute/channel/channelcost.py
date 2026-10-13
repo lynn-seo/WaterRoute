@@ -389,15 +389,12 @@ def costs_calc(CR):
     _length_of_channel_m = CR.length_km*1000 - CR.total_siphon_length
     _channel_head_loss_m = CR.real_channelSlope * _length_of_channel_m
 
-    # _siphon_head_loss_m = _siphon_slope * CR.total_siphon_length #TODO add change of velocity term
+    
     _siphon_head_loss_m = df_siphonLosses['siphon_head_loss_single'].sum()
     _siphon_head_loss_m_v2 = df_siphonLosses_v2['siphon_head_loss_allBarrels'].sum()
     _siphon_inlet_outlet_loss = df_siphon_inletOutlet_Losses['siphon_inletOutlet_loss'].sum()
     
-    # _total_siphon_head_loss = _siphon_head_loss_m +  _siphon_inlet_outlet_loss 
     
-
-
     _control_head_loss_m = 0.075 * (CR.profile['control_structure_id']>0).sum() #a count
 
     #not including  (CR.railway_crossing_count  + CR.highway_crossings_count) as they would probably replace a farm bridge

@@ -80,12 +80,3 @@ def getTotalChannelLinearCost(reserveWidth = 120, noGates = 1):
     res['Total'] = res['Easement'] + res['Catch drainage']
     return res
 
-
-
-###############################
-# TESTING
-###############################
-
-if __name__ == "__main__":
-
-    print(getTotalChannelLinearCost(reserveWidth = 120, noGates = 1))

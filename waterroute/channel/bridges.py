@@ -113,44 +113,6 @@ def getTotalCostPerCrossing(crossingType = 'farm access', BW = 50,
     return costFinal
 
 
-###############################
-# TESTING
-###############################
-
-if __name__ == "__main__":
-
-    # From HGD to Buchannan
-    print('From HGD to Buchannan')
-    BW = 50; D = 5.4
-    print('Cost of a farm access bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='farm access')))
-    print('Cost of a highway bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='highway')))
-    print('Cost of a railway bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='railway')))
-    print('')
-
-    # Part 1-From Buchannan to Big Drop
-    print('Part 1-From Buchannan to Big Drop')
-    BW = 45; D = 4.8
-    print('Cost of a farm access bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='farm access')))
-    print('Cost of a highway bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='highway')))
-    print('Cost of a railway bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='railway')))
-    print('')
-
-    # Part 3-From Big Drop to Cornish
-    print('Part 3-From Big Drop to Cornish')
-    BW = 55; D = 3.45
-    print('Cost of a farm access bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='farm access')))
-    print('Cost of a highway bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='highway')))
-    print('Cost of a railway bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='railway')))
-    print('')
-
-    # Sect 4-Cornish Ck to Aramac Ck
-    print('Sect 4-Cornish Ck to Aramac Ck')
-    BW = 40; D = 4.25
-    print('Cost of a farm access bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='farm access')))
-    print('Cost of a highway bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='highway')))
-    print('Cost of a railway bridge in $: ' + str(getTotalCostPerCrossing(BW = BW, D = D, crossingType='railway')))
-    print('')
-
 
 
 

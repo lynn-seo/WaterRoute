@@ -109,16 +109,3 @@ def getFlowCapacity(diameter, noBarrels):
 
     return flowCapacity
 
-
-###############################
-# TESTING
-###############################
-
-if __name__ == "__main__":
-
-    d = 1800
-    l = 80
-    nb = 28
-    cr = 1200
-    print(crossDrainageUnitCost(d, l, nb, cr))
-    print(flowCapacity(d, nb))
