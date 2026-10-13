@@ -17,7 +17,7 @@ Benchmarking against an independent real-world canal design produced comparable 
 | `tiled_flow/` | flow-direction / drainage code (`drain` is imported by `channelroute.py`) |
 | `channel_design.py` | model configuration : map display, channel sizing, routing runs with head-loss iteration |
 | `elliot_waterroute.ipynb` | main workflow notebook |
-| `inputs/` | Input data (`Sequential_Run.csv` template; DEM rasters are not in the repo) |
+| `inputs/` | Input data (`Sequential_Run.csv` template; Note DEM rasters are not in the repo) |
 | `tests/` | Module test notebook once used durintg development |
 
 ## Installation
