@@ -37,7 +37,7 @@ mamba activate channelroute
 
 ## Input data
 
-The DEM is too large for GitHub (>100 MB) and isn't committed. Place it locally at:
+Place it locally at:
 
 ```
 inputs/DEM/dem.tif           # digital elevation map, raster
