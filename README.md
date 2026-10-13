@@ -8,7 +8,7 @@ Benchmarking against an independent real-world canal design produced comparable 
 
 | Path | Contents |
 |---|---|
-| `waterroute/` | The Python package |
+| `waterroute/` | |
 | `waterroute/channelroute.py` | identifies least-cost path routing over a DEM/cost arrays, locate cross drainage, control structures, and calculate route outputs |
 | `waterroute/channel/` | channel cost components: earthworks, bridges, cross drainage, control structures and siphons, seepage/evaporation losses |
 | `waterroute/piperoute.py` | pipe hydraulics (head loss, diameter, velocity), pump and hydro station costs, pipe route optimisation |
