@@ -48,7 +48,7 @@ inputs/DEM/rock_depth.tif    # rock depth raster
 
 ## Usage
 
-Open `elliot_waterroute.ipynb` and run the cells in order.
+The model has a flexible architecture and is modular so that users can easily adjust parameters or swap a trapezoid cross section for a different type of cross section. Open `elliot_waterroute.ipynb` and run the cells in order.
 
 1. **Settings.** Set the paths, routing bounds, Manning's n, side slope and the per-section inputs (start/finish coordinates, start elevation, diversion flow, losses), then pass them to `channel_design.configure(...)`.
 2. **Candidate designs.** `candidate_designs(section, ratios, velocities)` produces channel geometries (width:depth ratio, depth, bed width, slope) for a range of flow velocities.
