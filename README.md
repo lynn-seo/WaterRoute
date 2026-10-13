@@ -10,10 +10,10 @@ Benchmarking against an independent real-world canal design produced comparable 
 |---|---|
 | `waterroute/` | |
 | `waterroute/channelroute.py` | identifies least-cost path routing over a DEM/cost arrays, locate cross drainage, control structures, and calculate route outputs |
-| `waterroute/channel/` | channel cost components: earthworks, bridges, cross drainage, control structures and siphons, seepage/evaporation losses |
+| `waterroute/channelcost.py/` | channel cost components: earthworks, bridges, cross drainage, control structures and siphons, seepage/evaporation losses |
 | `waterroute/piperoute.py` | pipe hydraulics (head loss, diameter, velocity), pump and hydro station costs, pipe route optimisation |
 | `waterroute/economics.py` | all the cost terms |
-| `waterroute/utils.py` | raster loading and output folders |
+| `waterroute/utils.py` | raster loading and other utility functions |
 | `tiled_flow/` | flow-direction / drainage code (`drain` is imported by `channelroute.py`) |
 | `channel_design.py` | model configuration : map display, channel sizing, routing runs with head-loss iteration |
 | `elliot_waterroute.ipynb` | main workflow notebook |
