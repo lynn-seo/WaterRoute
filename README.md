@@ -11,17 +11,17 @@ Benchmarking against an independent real-world canal design produced comparable 
 | Path | Contents |
 |---|---|
 | `waterroute/` | The Python package |
-| `waterroute/channelroute.py` | Least-cost path routing over a DEM (Dijkstra), cost arrays, cross drainage, control structures, route outputs |
-| `waterroute/channel/` | Channel cost components: earthworks, bridges, cross drainage, control structures and siphons, seepage/evaporation losses |
-| `waterroute/piperoute.py` | Pipe hydraulics (head loss, diameter, velocity), pump and hydro station costs, pipe route optimisation |
+| `waterroute/channelroute.py` | identifies least-cost path routing over a DEM/cost arrays, locate cross drainage, control structures, and calculate route outputs |
+| `waterroute/channel/` | channel cost components: earthworks, bridges, cross drainage, control structures and siphons, seepage/evaporation losses |
+| `waterroute/piperoute.py` | pipe hydraulics (head loss, diameter, velocity), pump and hydro station costs, pipe route optimisation |
 | `waterroute/electricityroute.py` | Transmission line and transformer cost model |
-| `waterroute/economics.py` | Indirect costs, inflation, levelised cost |
-| `waterroute/utils.py` | Raster loading and output folders |
-| `tiled_flow/` | Cython flow-direction / drainage code (`drain` is imported by `channelroute.py`) |
-| `channel_design.py` | Helpers used by the notebook: map display, channel sizing, routing runs with head-loss iteration |
-| `elliot_waterroute.ipynb` | Main workflow notebook |
+| `waterroute/economics.py` | indirect costs, inflation, levelised cost |
+| `waterroute/utils.py` | raster loading and output folders |
+| `tiled_flow/` | cython flow-direction / drainage code (`drain` is imported by `channelroute.py`) |
+| `channel_design.py` | model configuration : map display, channel sizing, routing runs with head-loss iteration |
+| `elliot_waterroute.ipynb` | main workflow notebook |
 | `inputs/` | Input data (`Sequential_Run.csv` template; DEM rasters are not in the repo) |
-| `tests/` | Module test notebook used durintg development |
+| `tests/` | Module test notebook once used durintg development |
 
 ## Installation
 
