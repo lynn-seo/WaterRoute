@@ -6,7 +6,7 @@ waterRoute identifies least-cost gravity-flow canal alignments using iterative l
 The framework explicitly evaluates and costs earthworks, water losses, linear and hydraulic infrastructure, and uniquely in the publish literature incorporates cross-drainage infrastructure identification and sizing.
 Benchmarking against an independent real-world canal design produced comparable engineering outcomes, lower costs, and substantially faster assessment.
 
-## Repository layout
+## model layout
 
 | Path | Contents |
 |---|---|
