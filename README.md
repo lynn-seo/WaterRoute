@@ -1,13 +1,10 @@
-# waterRoute
+# WaterRoute
 
-waterRoute identifies least-cost gravity-flow canal alignments using iterative least-cost path optimisation and hydraulic design principles.
+WaterRoute identifies least-cost gravity-flow canal alignments using iterative least-cost path optimisation and hydraulic design principles.
 The framework explicitly evaluates and costs earthworks, water losses, linear and hydraulic infrastructure, and uniquely in the publish literature incorporates cross-drainage infrastructure identification and sizing.
 Benchmarking against an independent real-world canal design produced comparable engineering outcomes, lower costs, and substantially faster assessment.
 
 ## Model layout
-
-| Path | Contents |
-|---|---|
 | `waterroute/channelroute.py` | identifies least-cost path routing over a DEM/cost arrays, locate cross drainage, control structures, and calculate route outputs |
 | `waterroute/channelcost.py/` | channel cost components: earthworks, bridges, cross drainage, control structures and siphons, seepage/evaporation losses |
 | `waterroute/piperoute.py` | pipe hydraulics (head loss, diameter, velocity), pump and hydro station costs, pipe route optimisation |
