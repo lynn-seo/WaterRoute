@@ -15,12 +15,12 @@ from setuptools import find_packages, setup
 
 setup(
     name="waterroute",
-    version="0.1.0",
+    version="1.0.0",
     description="Channel, pipe and electricity routing and costing tools",
     # waterroute and waterroute.channel. The tiled_flow folder has no __init__.py,
     # so it is not packaged (it is installed separately as tiled-flow).
     packages=find_packages(include=["waterroute", "waterroute.*"]),
-    python_requires=">=3.9",
+    python_requires=">=3.11",
     install_requires=[
         "numpy",
         "scipy",
