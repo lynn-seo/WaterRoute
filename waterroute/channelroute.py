@@ -1028,8 +1028,8 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     
     # with open(f'{output_path}_{target_elev}_weight_original.pkl', 'wb') as f:
     #         pickle.dump(weight_original, f)
-    with open(f'{output_path}_{target_elev}_weight_with_rock_depth.pkl', 'wb') as f:
-            pickle.dump(weight, f)
+    # with open(f'{output_path}_{target_elev}_weight_with_rock_depth.pkl', 'wb') as f:
+    #         pickle.dump(weight, f)
     
     properties_earthworks = earthworks.getCostEarthworks(DFL = 0,bedWidth = bed_width, depthFlow = water_depth, freeboard = freeboard,channelLined = False , rockDepth = 5)
     water_section_area = properties_earthworks['Geometries']['waterSection'].area
@@ -1052,8 +1052,8 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
                                     total_linear_cost=None, total_loss_GL=total_loss_GL, no_cells=no_cells, withLengthPenalty=False, is_sunwater_raster = False,
                                         approximate_length=approximate_length)
     
-    with open(f'{output_path}_{target_elev}_weigth0.pkl', 'wb') as f:
-            pickle.dump(weight, f)
+    # with open(f'{output_path}_{target_elev}_weigth0.pkl', 'wb') as f:
+    #         pickle.dump(weight, f)
         
     # path,l,cumDist,totalCost,profile,crossDF = calc_path(f'{output_path}_{target_elev}_contour_path',weight,target_elev,startCell,finishCell)
     leng = geodeticLineLengthInKm(l,False)
@@ -1083,11 +1083,12 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
         else:
             weight = make_specific_cost_array(flattened,bed_width,water_depth,freeboard,additional_per_m_cost)
                       
-        with open(f'{output_path}_{target_elev}_weigth{iterN}.pkl', 'wb') as f:
-            pickle.dump(weight, f)
+        # with open(f'{output_path}_{target_elev}_weigth{iterN}.pkl', 'wb') as f:
+        #     pickle.dump(weight, f)
+        
         #addLayer(m,f'weight',weight,aff,crs,1,50000,cm.viridis)
         
-        if sunWater_route and iterN == 4:
+        if sunWater_route and iterN == 4: #not used anymore
             path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
                                           total_linear_cost=total_linear_cost, total_loss_GL=total_loss_GL, no_cells=no_cells, withLengthPenalty=withLengthPenalty, is_sunwater_raster = True)
         else:
