@@ -17,15 +17,12 @@ Benchmarking against an independent real-world canal design produced comparable 
 | `elliot_waterroute.ipynb` | main workflow notebook |
 | `inputs/` | Input data (`Sequential_Run.csv` template; Note DEM rasters are not in the repo) |
 
-## Clone the repository
+## Clone the repository and install WaterRoute
 ```
 git clone https://github.com/lynn-seo/WaterRoute.git
+pip install -e
 ```
 
-## Installation
-```
-pip install -r requirements.txt 
-```
 
 
 ## Input data
