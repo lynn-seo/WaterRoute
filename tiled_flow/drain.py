@@ -194,15 +194,15 @@ def fixedFD(dem,sinks = None):
     G=nx.Graph()
     G.add_edges_from((u[0],u[1],d) for u,d in saddles_dict.items() )
     # nx.write_gpickle(G, 'graph.pkl')
-    with open('graph.pkl', 'wb') as f:
-        pickle.dump(G, f, pickle.HIGHEST_PROTOCOL)
+    # with open('graph.pkl', 'wb') as f:
+    #     pickle.dump(G, f, pickle.HIGHEST_PROTOCOL)
     
     # print ('mst')
     sys.stdout.flush()
     mst=nx.minimum_spanning_tree(G,weight='elev')
     # nx.write_gpickle(mst, 'mst.pkl')
-    with open('mst.pkl', 'wb') as f:
-        pickle.dump(mst, f, pickle.HIGHEST_PROTOCOL)
+    # with open('mst.pkl', 'wb') as f:
+    #     pickle.dump(mst, f, pickle.HIGHEST_PROTOCOL)
 
     # print ('predecessor')
     sys.stdout.flush()
