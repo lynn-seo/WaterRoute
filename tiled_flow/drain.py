@@ -166,13 +166,13 @@ def fixedFD(dem,sinks = None):
     # print ('d8')
     sys.stdout.flush()
     fd = flow1_c.d8(sunk_dem)
-    np.save('fd.npy', fd)
+    # np.save('fd.npy', fd)
 
     #unique label all catchments to sinks/outlets (remember d8 sets all edge cells as sinks)
     # print ('catchments')
     sys.stdout.flush()
     catch = flow1_c.sink_catchments(fd)  #use sink catchments in flow1_c
-    np.save('catch.npy', catch)
+    # np.save('catch.npy', catch)
 
     #bit of a hack so all outflowing catchments flow to the same catchment make all
     #the edges flow to a catchment labeled 0
@@ -201,8 +201,8 @@ def fixedFD(dem,sinks = None):
     sys.stdout.flush()
     mst=nx.minimum_spanning_tree(G,weight='elev')
     # nx.write_gpickle(mst, 'mst.pkl')
-    # with open('mst.pkl', 'wb') as f:
-    #     pickle.dump(mst, f, pickle.HIGHEST_PROTOCOL)
+    with open('mst.pkl', 'wb') as f:
+        pickle.dump(mst, f, pickle.HIGHEST_PROTOCOL)
 
     # print ('predecessor')
     sys.stdout.flush()
