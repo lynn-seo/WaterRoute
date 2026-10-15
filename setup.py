@@ -5,11 +5,6 @@ Put this file next to the `waterroute` folder (not inside it), then run:
     pip install -e .
 
 (`-e` links to your files, so edits take effect without reinstalling.)
-
-channelroute.py does `import drain` at import time. `drain` comes from the separate
-tiled-flow package (the .whl), which is not on PyPI, so install that first:
-
-    pip install tiled_flow-0.1.0-cp311-cp311-win_amd64.whl
 """
 from setuptools import find_packages, setup
 
