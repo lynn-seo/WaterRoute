@@ -17,13 +17,15 @@ Benchmarking against an independent real-world canal design produced comparable 
 | `elliot_waterroute.ipynb` | main workflow notebook |
 | `inputs/` | Input data (`Sequential_Run.csv` template; Note DEM rasters are not in the repo) |
 
-## Installation
-Install the packages using mamba or conda
+## Clone the repository
 ```
-mamba env create -f waterroute/environment.yml
-mamba activate channelroute
+git clone https://github.com/lynn-seo/WaterRoute.git
 ```
 
+## Installation
+```
+pip install -r requirements.txt 
+```
 
 
 ## Input data
