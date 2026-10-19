@@ -370,7 +370,7 @@ def simplified_siphon_structures_cost(bedWidth,waterDepth,freeboard,pipe_OD,num_
     outlet_cost = getTotalCost_siphonOutlet(**settings)
     return inlet_cost['Total'] + outlet_cost['Total']
 
-def simplified_control_structures_cost(bedWidth,waterDepth,freeboard, pipe_OD, num_barrels ):
+def simplified_control_structures_cost(bedWidth,waterDepth,freeboard, pipe_OD=None, num_barrels=None):
 
     height_of_gate = 1.2*waterDepth
     D = waterDepth + freeboard
@@ -535,5 +535,3 @@ def getTotalCost_siphonBaffledOutlet(bedWidth = 50, lengthCarrWalls = 7, t = 0.5
     res['Rockwork, d/s'] = getCostDownstreamRockwork(bedWidth, Ddown, lengthCarrWalls, rockworkBeyondCarrWalls)
     res['Total'] = res['Concrete']['Total'] + res['Steelwork']['Total'] + res['Rockwork, d/s']['Total']
     return res
-
-

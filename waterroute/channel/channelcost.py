@@ -282,7 +282,7 @@ def costs_calc(CR):
     
     #use_siphon_v2 is the final decision on whether to use a siphon or not, 2/10/2025 Lynn
     #this is culvert 
-    CR.profile['control_structure_cost']  = CR.profile[(CR.profile['control_structure_id']>0) & ~CR.profile['use_siphon']].apply(lambda x: inlineAndSiphonControlStructures.simplified_control_structures_cost(x['bed_width'],x['water_depth'],x['freeboard'], x['siphon_pipe_D'], x['siphon_number_of_barrels']),axis='columns')
+    CR.profile['control_structure_cost']  = CR.profile[(CR.profile['control_structure_id']>0) & ~CR.profile['use_siphon']].apply(lambda x: inlineAndSiphonControlStructures.simplified_control_structures_cost(x['bed_width'],x['water_depth'],x['freeboard']),axis='columns')
     CR.control_structure_cost = CR.profile['control_structure_cost'].sum()
     
     df_siphonLosses = CR.profile[CR.profile['use_siphon']==True].apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss(x['length_of_siphon(m)'], 0.013, x['siphon_velocity'], x['siphon_pipe_D']),axis='columns', result_type='expand')
