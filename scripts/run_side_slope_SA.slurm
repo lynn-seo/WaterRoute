@@ -11,8 +11,8 @@
 set -euo pipefail
 
 # SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT_DIR="/home/yourusername/WaterRoute"
-REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+SCRIPT_DIR="/scratch3/seo010/waterRoute/scripts"
+REPO_ROOT="/scratch3/seo010/waterRoute"
 
 # Each array task gets its own working directory
 TASK_TMP_ROOT="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}"
@@ -25,15 +25,11 @@ cd "${TASK_WORK_DIR}"
 # source "${HOME}/miniforge3/etc/profile.d/conda.sh"
 # conda activate channelroute
 
+echo "SCRIPT_DIR: ${SCRIPT_DIR}"
+ls -l "${SCRIPT_DIR}/run_side_slope_sensitivity.py"
+
 PYTHON="${PYTHON:-python}"
 
-# exec "${PYTHON}" "${SCRIPT_DIR}/run_side_slope_sensitivity.py" \
-#     --task-index "${SLURM_ARRAY_TASK_ID}"
-exec "${PYTHON:-python}" "${SCRIPT_DIR}/run_side_slope_sensitivity.py" \
+exec "${PYTHON}" "${SCRIPT_DIR}/run_side_slope_sensitivity.py" \
     --task-index "${SLURM_ARRAY_TASK_ID}"
 
-echo "Current directory: $(pwd)"
-echo "Script directory: ${SCRIPT_DIR}"
-echo "Python script exists:"
-
-ls -l "${SCRIPT_DIR}/run_side_slope_sensitivity.py"
