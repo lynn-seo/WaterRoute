@@ -1,7 +1,0 @@
-flow1_c.c
-flow1_c_setup.py
-setup.py
-flow1_c.egg-info/PKG-INFO
-flow1_c.egg-info/SOURCES.txt
-flow1_c.egg-info/dependency_links.txt
-flow1_c.egg-info/top_level.txt
