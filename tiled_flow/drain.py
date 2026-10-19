@@ -13,7 +13,7 @@ import numpy as np
 import scipy
 from scipy import ndimage
 import networkx as nx
-from waterroute.tiled_flow import flow1_c
+from tiled_flow import flow1_c
 from osgeo import gdal, gdalconst
 import sys
 
