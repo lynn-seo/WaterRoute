@@ -65,4 +65,30 @@ for section, ratio, depth, width, slope_1_in_x, velocity in candidate_designs("s
         slope_for_channel_dimension=1 / slope_1_in_x,
     )
 ```
+
+### Linux SLURM side-slope sensitivity run
+
+The notebook's section 2 side-slope sweep is available as a batch job:
+
+```bash
+sbatch scripts/run_side_slope_sensitivity.slurm
+```
+
+The SLURM script expects a Python environment with the packages in
+`waterroute/environment.yml`. Activate that environment in the script's
+environment-setup section or set it up through your cluster's module system.
+The default inputs are resolved from this repository. Set
+`WATERROUTE_ROUTES_DIR`, `WATERROUTE_SEQUENTIAL_RUN_TEMPLATE`,
+`WATERROUTE_DEM_PATH`, or `WATERROUTE_ROCK_DEPTH_PATH` in the job environment
+to override their locations. Adjust the SLURM memory and time requests for
+your cluster's limits.
+
+The SLURM array runs one section/side-slope/velocity combination per task
+(three side slopes across all configured section velocity ranges; 15 tasks
+with the current ranges). It limits concurrency to four tasks; adjust the
+`--array` directive to match your cluster capacity and velocity ranges. Each
+task uses a separate temporary working directory to prevent collisions in
+intermediate files. The runner skips a scenario if its output directory
+already exists.
+
 The example run is given in `elliot_waterroute.ipynb`. 

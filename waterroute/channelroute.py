@@ -116,80 +116,77 @@ def route_through_array(array, start, end, fully_connected=True,
     #print (costs[end]/1000000)
     return m.traceback(end), costs[end]
 
-def route_through_array_length_penalty_v2(array, start, end,
-                                       length_penalty,
+# #no long use
+# def route_through_array_length_penalty_v2(array, start, end,
+#                                        lenghth_penalty_per_km,
+#                                        fully_connected=True,
+#                                        geometric=True):
+#     """
+#     length_penalty : annualised cost per km
+#     this uses buffer along the path
+#     """
+#     # print(f'length_penalty ($/cell)= {length_penalty}')
+#     temp_array = array.copy()
+#     paths = []
+#     costs_list = []
+
+#     for i in range(30):
+
+#         m = mcp_class(temp_array, fully_connected=fully_connected, sampling=(30,30))
+#         costs, _ = m.find_costs([start], [end], find_all_ends=False)
+
+#         cost = costs[end]
+#         if np.isinf(cost):
+#             break
+
+#         path = m.traceback(end)
+
+#         paths.append(path)
+#         costs_list.append(cost)
+
+#         # apply penalty to get next route by buffering the path otherwise each of route is too same which is computationally inefficient 
+#         for r, c in path:
+#             r0 = max(0, r - 2)
+#             r1 = min(temp_array.shape[0], r + 3)
+#             c0 = max(0, c - 2)
+#             c1 = min(temp_array.shape[1], c + 3)
+
+#             temp_array[r0:r1, c0:c1] += length_penalty
+
+#     # ✅ return cheapest
+#     if paths:
+#         min_idx = np.argmin(costs_list)
+#         best_path = paths[min_idx]
+#         best_cost = costs_list[min_idx]
+#     else:
+#         best_path, best_cost = None, np.inf
+
+#     return best_path, best_cost
+
+
+#this add linear cost on the earthwork cost array
+def route_through_array_length_penalty(array, start, end,
+                                       lenghth_penalty_per_km=None,
                                        fully_connected=True,
                                        geometric=True):
     """
-    length_penalty : cost per cell 
-    this uses buffer along the path
-    """
-    print(f'length_penalty ($/cell)= {length_penalty}')
-    temp_array = array.copy()
-    paths = []
-    costs_list = []
-
-    for i in range(30):
-
-        m = mcp_class(temp_array, fully_connected=fully_connected, sampling=(30,30))
-        costs, _ = m.find_costs([start], [end], find_all_ends=False)
-
-        cost = costs[end]
-        if np.isinf(cost):
-            break
-
-        path = m.traceback(end)
-
-        paths.append(path)
-        costs_list.append(cost)
-
-        # apply penalty to get next route by buffering the path otherwise each of route is too same which is computationally inefficient 
-        for r, c in path:
-            r0 = max(0, r - 2)
-            r1 = min(temp_array.shape[0], r + 3)
-            c0 = max(0, c - 2)
-            c1 = min(temp_array.shape[1], c + 3)
-
-            temp_array[r0:r1, c0:c1] += length_penalty
-
-    # ✅ return cheapest
-    if paths:
-        min_idx = np.argmin(costs_list)
-        best_path = paths[min_idx]
-        best_cost = costs_list[min_idx]
-    else:
-        best_path, best_cost = None, np.inf
-
-    return best_path, best_cost
-
-
-
-def route_through_array_length_penalty(array, start, end,
-                                       length_penalty=None,
-                                       fully_connected=True,
-                                       geometric=True, no_cells=None):
-    """
-    length_penalty : cost per cell 
+    length_penalty : annualised cost per km 
     """
     
     start, end = tuple(start), tuple(end)
 
-    #use 4 for reach1, 3 for reach2
-    # buffer_size = 3 #this is size of buffer to get alternative paths, larger buffer size gives you more straight alignment
-    buffer_size = round(no_cells/1000,1) + 4 if no_cells is not None else 4
-    buffer_size = 1
-    # buffer_size = round(no_cells/1000,1) + 2 if no_cells is not None else 4
-    # buffer_size = 4 #this is size of buffer to get alternative paths
+    
     # 🔹 Add length penalty to cost surface
     # penalised_array = array + length_penalty/buffer_size
     # length_penalty = 0
-    length_penalty = annualised_cost(577045/1000)
+    # length_penalty = annualised_cost(577045/1000)
     
-    if length_penalty is None:
-        length_penalty = 0
+    if lenghth_penalty_per_km is None:
+        lenghth_penalty_per_km = 0
 
     # print(f'length_penalty ($/cell)= {length_penalty}')
-    penalised_array = array + length_penalty
+    print(f'length_penalty ($/m)= {lenghth_penalty_per_km/1000}')
+    penalised_array = array + lenghth_penalty_per_km/1000
     if geometric:
         mcp_class = MCP_Geometric
     else:
@@ -490,7 +487,8 @@ def annualised_cost(cost, discount_rate = 0.07, lifespan= 50, QandM_percent=0.02
         return cost * (discount_rate * (1 + discount_rate) ** lifespan) / ((1 + discount_rate) ** lifespan - 1) + cost * QandM_percent
 
 
-def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width, water_depth, freeboard, additional_per_m_cost, rockDepth_raster):
+def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width, water_depth, freeboard, additional_per_m_cost, rockDepth_raster, 
+                                           earthwork_cost_weight):
     '''applies a cost of fill/cut function to a surface 
     
     relDEM is an elevation surface. Elevation are relative to the target natural surface gradeline
@@ -514,21 +512,18 @@ def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width
     cost_lut[rock_idx - ROCK_MIN, dfl_idx - DFL_MIN] = cost_val
 
 
-    # Raster -> integer bins
-    rock_i = np.rint(rockDepth_raster).astype(np.int16)
-    dfl_i  = np.rint(relDEM).astype(np.int16)
-    #set out of bounds to nearest valid index
-    rock_i = np.clip(rock_i, ROCK_MIN, ROCK_MAX)
-    dfl_i = np.clip(dfl_i, DFL_MIN, DFL_MAX)
-
-
-    # Finite + in-range mask
-    valid = (
-        np.isfinite(rockDepth_raster) &
-        np.isfinite(relDEM) &
-        (rock_i >= ROCK_MIN) & (rock_i <= ROCK_MAX) &
-        (dfl_i >= DFL_MIN) & (dfl_i <= DFL_MAX)
-    )
+    # Raster -> integer bins; leave invalid cells out of the cast.
+    rock_finite = np.isfinite(rockDepth_raster)
+    dfl_finite = np.isfinite(relDEM)
+    rock_i = np.zeros(rockDepth_raster.shape, dtype=np.int16)
+    dfl_i = np.zeros(relDEM.shape, dtype=np.int16)
+    rock_i[rock_finite] = np.clip(
+        np.rint(rockDepth_raster[rock_finite]), ROCK_MIN, ROCK_MAX
+    ).astype(np.int16)
+    dfl_i[dfl_finite] = np.clip(
+        np.rint(relDEM[dfl_finite]), DFL_MIN, DFL_MAX
+    ).astype(np.int16)
+    valid = rock_finite & dfl_finite
 
     # Vectorized lookup
     specific_cost_array2 = np.full(relDEM.shape, np.nan, dtype=np.float64)
@@ -543,9 +538,9 @@ def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width
     #      pickle.dump(earthWorkCost_curve, f)
     # with open('realDEM.pkl', 'wb') as f:
     #      pickle.dump(relDEM, f)
-    
+    print(f"Earthwork cost weight: {earthwork_cost_weight}")
 
-    return specific_cost_array2
+    return specific_cost_array2*earthwork_cost_weight
 
 
 
@@ -769,29 +764,37 @@ def get_min_max_indices(indices, sunwater_raster):
     return indices
 
 
-def calc_path(output_path, weight, target_elev, startCell,finishCell,aff, loss_value_dollar_per_ML, total_linear_cost, total_loss_GL, no_cells, withLengthPenalty, is_sunwater_raster = False, approximate_length=67):
+def calc_path(output_path, weight, target_elev, startCell,finishCell,aff, loss_value_dollar_per_ML, total_linear_cost, total_loss_ML,
+              withLengthPenalty = True, is_sunwater_raster = False, approximate_length = 1,
+              discount_rate = 0.07, lifespan = 50):
     
     # indices, totalWeight = route_through_array(weight, startCell, finishCell,geometric=True)
     # farmCrossing_cost = 4081275
     # easement_lining_cost = 9714603
     # catchDrainage_cost = 792007
     # SCADA_cost = 224402
-    # no_cells = 2250
-    # total_annualised_linearCost_per_cell = annualised_cost(total_linear_cost) / no_cells #assuming 2250 cells in the channel, this is a very rough estimate 
+    
     if total_linear_cost is None:
         lenghth_penalty = 0
     else:
-        total_annualised_linearCost_per_km = annualised_cost(total_linear_cost) #this is per km value not per cell
-        lenghth_penalty = total_annualised_linearCost_per_km + total_loss_GL*1000*loss_value_dollar_per_ML
+        total_annualised_linearCost_per_km = annualised_cost(
+            total_linear_cost / approximate_length,
+            discount_rate=discount_rate,
+            lifespan=lifespan,
+        ) #this is per km value not per cell
+        #total_loss_ML is annual value; no need to annualise it. 
+        lenghth_penalty_per_km = total_annualised_linearCost_per_km + total_loss_ML*loss_value_dollar_per_ML/approximate_length
     
     # legnth_penalty = 0
     # 7487, dollar per cell, from linear cost
     # 12579, is value of loss per cell 
     # print(f'length_penalty ($/cell)= {legnth_penalty}')
-    
+    print('approximated length (km) =',approximate_length)
+    print('linear cost per km =',lenghth_penalty_per_km)
     
     if (withLengthPenalty):
-        indices, totalWeight = route_through_array_length_penalty(weight, startCell, finishCell,geometric=True, length_penalty= lenghth_penalty, no_cells = no_cells)
+        indices, totalWeight = route_through_array_length_penalty(weight, startCell, finishCell,geometric=True, 
+                                                                  lenghth_penalty_per_km= lenghth_penalty_per_km)
     else:
         indices, totalWeight = route_through_array(weight, startCell, finishCell,geometric=True)
     
@@ -939,24 +942,25 @@ def smooth(y, box_pts=30):
     return y_smooth
 
 
-def elevRangePathsWithJunction(output_path,dem,aff,fr,to,targetSlope,start,finish,max_fill_siphon_ends, contour,doCrossDrainage,sampleF,
-                   bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
-                   loss_value_dollar_per_ML, total_linear_cost, total_loss_GL, no_cells, sunWater_route):
-    #junction point considered where the slope changes
-    paths = {}
-    for elev in range(fr,to,1):
-    #for endElev in range(fr, to, 1):
-        print (f'target elevation is {elev}')
-        path = elevPath(output_path,dem,aff,targetSlope,start,finish,max_fill_siphon_ends,elev, contour,doCrossDrainage,sampleF,
-                        bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
-                        loss_value_dollar_per_ML, total_linear_cost, total_loss_GL, no_cells, sunWater_route)
-        paths[elev] = path
-    return paths
+# def elevRangePathsWithJunction(output_path,dem,aff,fr,to,targetSlope,start,finish,max_fill_siphon_ends, contour,doCrossDrainage,sampleF,
+#                    bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
+#                    loss_value_dollar_per_ML, total_linear_cost, sunWater_route):
+#     #junction point considered where the slope changes
+#     paths = {}
+#     for elev in range(fr,to,1):
+#     #for endElev in range(fr, to, 1):
+#         print (f'target elevation is {elev}')
+#         path = elevPath(output_path,dem,aff,targetSlope,start,finish,max_fill_siphon_ends,elev, contour,doCrossDrainage,sampleF,
+#                         bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
+#                         loss_value_dollar_per_ML, total_linear_cost, sunWater_route)
+#         paths[elev] = path
+#     return paths
 
 
 def elevRangePaths(output_path,dem,aff,crs,fr,to,targetSlope,start,finish,max_fill_siphon_ends, contour,doCrossDrainage,sampleF,
                    bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
-                   loss_value_dollar_per_ML, total_linear_cost, total_loss_GL, no_cells, withLengthPenalty, cost_array_with_rock_depth, sunWater_route, approximate_length):
+                   loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth, 
+                   sunWater_route,earthwork_cost_weight, approximate_length, discount_rate=0.07, lifespan=50):
     paths = {}
     for elev in range(fr,to,1):
     # for i in range(0,1): #modified by Lynn to handle float start_elevation
@@ -964,14 +968,16 @@ def elevRangePaths(output_path,dem,aff,crs,fr,to,targetSlope,start,finish,max_fi
         # print (f'target elevation is {elev}')
         path = elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_ends,elev, contour,doCrossDrainage,sampleF,
                         bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
-                        loss_value_dollar_per_ML, total_linear_cost, total_loss_GL, no_cells, withLengthPenalty, cost_array_with_rock_depth,sunWater_route, approximate_length )
+                        loss_value_dollar_per_ML, total_linear_cost,  withLengthPenalty, cost_array_with_rock_depth,
+                        sunWater_route,earthwork_cost_weight, approximate_length, discount_rate, lifespan )
         paths[elev] = path
     return paths
 
         
 def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_ends,target_elev,
              contour,doCrossDrainage,sampleF,bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
-             loss_value_dollar_per_ML, total_linear_cost, total_loss_GL, no_cells,withLengthPenalty, cost_array_with_rock_depth, sunWater_route, approximate_length):
+             loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth, sunWater_route,earthwork_cost_weight,
+               approximate_length, discount_rate=0.07, lifespan=50):
     
     # startCell = (~aff * start)
     # finishCell = (~aff * finish)
@@ -1009,8 +1015,15 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
             results.append({
                 'rock_depth': rock_depth,
                 'dfl': dfl,
-                'cost': annualised_cost(works['Total Cost']) 
-                            + annualised_cost(additional_per_m_cost),
+                'cost': annualised_cost(
+                    works['Total Cost'],
+                    discount_rate=discount_rate,
+                    lifespan=lifespan,
+                ) + annualised_cost(
+                    additional_per_m_cost,
+                    discount_rate=discount_rate,
+                    lifespan=lifespan,
+                ),
                 'channel_lined': False
             })
 
@@ -1020,7 +1033,8 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
 
     # weight_original = make_specific_cost_array(dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost)
     if cost_array_with_rock_depth:
-        weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost, rockDepth_raster)
+        weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost, 
+                                                        rockDepth_raster, earthwork_cost_weight)
     else:
         weight = make_specific_cost_array(dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost)
         
@@ -1036,21 +1050,24 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     wetted_perimeter = properties_earthworks['Geometries']['wettedPerimeterSection'].length
     water_surface_width = properties_earthworks['Geometries']['waterSection'].bounds[2] - properties_earthworks['Geometries']['waterSection'].bounds[0]
 
-    annual_loss_per_km = Losses.getAnnualLossesLinear(annualDuration = 330, channelLength = 1, surfaceWidth = water_surface_width, evapPanAnnual = 2,
+    annual_loss_ML_per_annum = Losses.getAnnualLossesLinear(annualDuration = 330, channelLength = 1, surfaceWidth = water_surface_width, evapPanAnnual = 2,
                         evapPeakDaily = 6, bedPerimeter = bed_width, k = 0.002, 
                         lossEachStockDomestic = 2, spacingStockDomestic = 2, leakageRate = 0, channelXSection = water_section_area,rolling_shutdown_factor = 1, 
                         waterDepth= water_depth)
     
-    total_annual_loss_per_km = {}
-    for k in annual_loss_per_km.keys():
-            total_annual_loss_per_km[k] = total_annual_loss_per_km.get(k,0) + annual_loss_per_km[k]
+    pd.Series(annual_loss_ML_per_annum, name='ML_per_annum').to_csv(
+        f'{output_path}_{target_elev}_annual_loss.csv',
+        header=True
+    )
 
-    total_loss_GL = total_annual_loss_per_km['Total'] 
+    total_loss_ML = annual_loss_ML_per_annum['Total'] 
 
     # #addLayer(m,'contour_weight',1/weight,aff,crs,1,10,cm.viridis)
+    
     path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
-                                    total_linear_cost=None, total_loss_GL=total_loss_GL, no_cells=no_cells, withLengthPenalty=False, is_sunwater_raster = False,
-                                        approximate_length=approximate_length)
+                                    total_linear_cost=total_linear_cost, total_loss_ML=total_loss_ML, 
+                                    withLengthPenalty=False, is_sunwater_raster = False,approximate_length=approximate_length,
+                                    discount_rate=discount_rate, lifespan=lifespan)
     
     # with open(f'{output_path}_{target_elev}_weigth0.pkl', 'wb') as f:
     #         pickle.dump(weight, f)
@@ -1062,7 +1079,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     
 
     for iterN in range(1,5):
-        # print (f'iteration number: {iterN}')
+        print (f'iteration number: {iterN}')
         if targetSlope is None:
             #estimate a slope
             # print(f'iterN {iterN} leng {leng}')
@@ -1079,7 +1096,8 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
         flattened = dem - target_elev - slopeSurface
 
         if cost_array_with_rock_depth:
-            weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, flattened,bed_width,water_depth,freeboard,additional_per_m_cost, rockDepth_raster)
+            weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, flattened,bed_width,water_depth,freeboard,additional_per_m_cost, 
+                                                            rockDepth_raster, earthwork_cost_weight)
         else:
             weight = make_specific_cost_array(flattened,bed_width,water_depth,freeboard,additional_per_m_cost)
                       
@@ -1090,14 +1108,20 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
         
         if sunWater_route and iterN == 4: #not used anymore
             path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
-                                          total_linear_cost=total_linear_cost, total_loss_GL=total_loss_GL, no_cells=no_cells, withLengthPenalty=withLengthPenalty, is_sunwater_raster = True)
+                                          total_linear_cost=total_linear_cost, total_loss_ML=total_loss_ML, 
+                                        withLengthPenalty=withLengthPenalty, is_sunwater_raster = True,approximate_length=approximate_length,
+                                        discount_rate=discount_rate, lifespan=lifespan)
         else:
             if iterN == 4:
                 path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
-                                          total_linear_cost=total_linear_cost, total_loss_GL=total_loss_GL, no_cells=no_cells, withLengthPenalty=withLengthPenalty, is_sunwater_raster = False, approximate_length=approximate_length)
+                                          total_linear_cost=total_linear_cost, total_loss_ML=total_loss_ML,
+                                            withLengthPenalty=withLengthPenalty, is_sunwater_raster = False, approximate_length=approximate_length,
+                                            discount_rate=discount_rate, lifespan=lifespan)
             else:                
                 path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
-                                          total_linear_cost=total_linear_cost, total_loss_GL=total_loss_GL, no_cells=no_cells, withLengthPenalty=withLengthPenalty, is_sunwater_raster = False)
+                                          total_linear_cost=total_linear_cost, total_loss_ML=total_loss_ML,
+                                            withLengthPenalty=withLengthPenalty, is_sunwater_raster = False, approximate_length=approximate_length,
+                                            discount_rate=discount_rate, lifespan=lifespan)
             
         
         leng = geodeticLineLengthInKm(l,False)
@@ -1105,8 +1129,8 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
         #pathDF = gpd.GeoDataFrame([l], columns=['geometry'])
 
 
-    with open(f'{output_path}_{target_elev}_path.pkl', 'wb') as f:
-        pickle.dump(path, f)
+    # with open(f'{output_path}_{target_elev}_path.pkl', 'wb') as f:
+    #     pickle.dump(path, f)
     # 
     # #when targetSlope is None    
     targetSlope = adj_targetSlope
@@ -1128,5 +1152,3 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     profile.to_pickle(f'{output_path}_{target_elev}_profile.pkl')
     
     return (path,profile,l)
-
-
