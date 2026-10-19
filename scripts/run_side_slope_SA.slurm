@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #SBATCH --job-name=waterroute-side-slope
 #SBATCH --time=05:00:00
