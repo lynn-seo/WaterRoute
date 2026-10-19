@@ -41,6 +41,7 @@ setup(
             "livemaptiles @ git+https://github.com/artttt/livemaptiles.git@7d9c7ac2e44399f9b071ad3fdadb6534a2ea66c3",
             "fiona",
             "ipykernel",
+            "mercantile",
         ],
     },
 )
