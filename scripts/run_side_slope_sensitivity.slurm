@@ -5,7 +5,8 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=32G
-#SBATCH --time=24:00:00
+#SBATCH --time=05:00:00
+#SBATCH --account=OD-226458
 #SBATCH --output=waterroute-side-slope-%j.out
 
 set -euo pipefail
