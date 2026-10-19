@@ -44,6 +44,7 @@ class Channel_Reach:
 class Channel_Route:
     reaches:list  = field(default_factory=list)
     description: str = ''
+    linear_cost_factor: float = 1.0
     min_slope: float = 1/20000
     mannings_n: float = 0.0225
     path = None
@@ -111,7 +112,9 @@ def costs_calc(CR):
             reach.freeboard = 0.2 * reach.water_depth + 0.3
 
         #lots of default values here
-        reach.earthworks = earthworks.getCostEarthworks(DFL = 0,bedWidth = reach.bed_width, depthFlow = reach.water_depth, freeboard = reach.freeboard,channelLined = CR.lined , rockDepth = CR.rockDepth)
+        reach.earthworks = earthworks.getCostEarthworks(DFL = 0,bedWidth = reach.bed_width, depthFlow = reach.water_depth, 
+                                                        freeboard = reach.freeboard,channelLined = CR.lined , rockDepth = CR.rockDepth, 
+                                                        sides = CR.side_slope)
         reach.water_section_area = reach.earthworks['Geometries']['waterSection'].area
         reach.wetted_perimeter = reach.earthworks['Geometries']['wettedPerimeterSection'].length
         reach.water_surface_width = reach.earthworks['Geometries']['waterSection'].bounds[2] - reach.earthworks['Geometries']['waterSection'].bounds[0]
@@ -149,12 +152,13 @@ def costs_calc(CR):
         # print(CR.rockDepth)
         rd = p['rock_depth(m)'].mean()
         s = p['flow_level_elevation(m)'] - p['natural_surface_elevation(m)']
-        ew = s.apply(earthworks.getCostEarthworks,bedWidth = reach.bed_width, depthFlow = reach.water_depth, freeboard = reach.freeboard,channelLined = CR.lined , rockDepth = rd)
+        ew = s.apply(earthworks.getCostEarthworks,bedWidth = reach.bed_width, depthFlow = reach.water_depth, 
+                     freeboard = reach.freeboard,channelLined = CR.lined , rockDepth = rd, sides = CR.side_slope)
         ew = pd.DataFrame(ew.tolist())
         ew.index = s.index
         
         CR.profile.loc[reach.start_location_id:reach.end_location_id,'full_width'] = ew['full_width']
-        CR.profile.loc[reach.start_location_id:reach.end_location_id,'earthworks_direct_cost_per_m'] = ew['Total Cost']
+        CR.profile.loc[reach.start_location_id:reach.end_location_id,'earthworks_direct_cost_per_m'] = ew['Total Cost'] * CR.earthwork_cost_weight
         CR.profile.loc[reach.start_location_id:reach.end_location_id,'earthworks_rock_excav_vol_per_m'] = ew['Rock Excav']
         CR.profile.loc[reach.start_location_id:reach.end_location_id,'earthworks_soil_excav_vol_per_m'] = ew['Excav']
         CR.profile.loc[reach.start_location_id:reach.end_location_id,'earthworks_fill_vol_per_m'] = ew['Fill-Normal']
@@ -183,7 +187,8 @@ def costs_calc(CR):
     CR.profile['earthworks_borrow_fill_vol'] = CR.profile['earthworks_borrow_fill_vol_per_m'] * CR.profile['cell_distance(m)']
     
     
-    CR.unit_farm_crossing_costs = bridges.getTotalCostPerCrossing(BW = CR.reaches[0].bed_width, D = CR.reaches[0].water_depth+CR.reaches[0].freeboard, crossingType='farm access')['Total']
+    CR.unit_farm_crossing_costs = bridges.getTotalCostPerCrossing(BW = CR.reaches[0].bed_width, D = CR.reaches[0].water_depth+CR.reaches[0].freeboard,
+                                                                   crossingType='farm access')['Total'] 
     #major bridges costs - dont have a location for the bridges so use the dimensions for the widest part of the channel
     CR.railway_crossing_costs = CR.railway_crossing_count * bridges.getTotalCostPerCrossing(BW = CR.reaches[0].bed_width, D = CR.reaches[0].water_depth+CR.reaches[0].freeboard, crossingType='railway')['Total']
     CR.highway_crossing_costs = CR.highway_crossings_count * bridges.getTotalCostPerCrossing(BW = CR.reaches[0].bed_width, D = CR.reaches[0].water_depth+CR.reaches[0].freeboard, crossingType='highway')['Total']
@@ -196,21 +201,22 @@ def costs_calc(CR):
     #costs
     CR.length_km = CR.profile['short_distance(m)'].max()/1000
     
-    CR.unit_access_road_cost = CR.access_road_direct_cost_per_km
-    CR.access_road_cost = CR.access_road_direct_cost_per_km * CR.length_km
-    CR.mean_toe_to_toe_width =  CR.profile['full_width'].mean()
+    CR.unit_access_road_cost = CR.access_road_direct_cost_per_km * CR.linear_cost_factor
+    CR.access_road_cost = CR.access_road_direct_cost_per_km * CR.length_km * CR.linear_cost_factor
+    CR.mean_toe_to_toe_width =  CR.profile['full_width'].mean() 
     
-    CR.unit_farm_crossing_cost = bridges.getTotalCostPerCrossing(BW = CR.reaches[0].bed_width, D = CR.reaches[0].water_depth+CR.reaches[0].freeboard, crossingType='farm access')['Total']
+    CR.unit_farm_crossing_cost = bridges.getTotalCostPerCrossing(BW = CR.reaches[0].bed_width, D = CR.reaches[0].water_depth+CR.reaches[0].freeboard, 
+                                                                 crossingType='farm access')['Total'] 
     CR.reserve_width_m = CR.mean_toe_to_toe_width + CR.additional_reserve_width_m
     _linear_cost_per_km = channelLinearCosts.getTotalChannelLinearCost(reserveWidth = CR.reserve_width_m, noGates = 1)
 
-    CR.unit_easement_linear_costs_km = _linear_cost_per_km['Easement']
-    CR.easement_linear_costs =_linear_cost_per_km['Easement']  * CR.length_km
+    CR.unit_easement_linear_costs_km = _linear_cost_per_km['Easement'] * CR.linear_cost_factor
+    CR.easement_linear_costs =_linear_cost_per_km['Easement']  * CR.length_km * CR.linear_cost_factor
     
-    CR.unit_catch_drainage_linear_costs_km = _linear_cost_per_km['Catch drainage']
-    CR.catch_drainage_costs =_linear_cost_per_km['Catch drainage']  * CR.length_km
+    CR.unit_catch_drainage_linear_costs_km = _linear_cost_per_km['Catch drainage'] * CR.linear_cost_factor
+    CR.catch_drainage_costs =_linear_cost_per_km['Catch drainage']  * CR.length_km * CR.linear_cost_factor
     CR.land_resumptions_and_relocations_cost = CR.land_resumptions_and_relocations_per_ha * CR.reserve_width_m * CR.length_km * 1000 / 10000
-    CR.SCADA_network_cost = CR.length_km * 3400
+    CR.SCADA_network_cost = CR.length_km * 3400 * CR.linear_cost_factor #from Kev, 2025
 
     CR.siphon_cost = 0
     CR.siphon_earthworks_cost_saving = 0
@@ -275,17 +281,12 @@ def costs_calc(CR):
     #now control_structure refers to actual slope the model decided
     temp_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1] - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])
     CR.profile = channelroute.add_control_structures_V2(CR.profile,maxControlSpacing=CR.maxControlSpacing,channelSlope= abs(temp_slope),minWaterDepth=CR.bay_minWaterDepth)
-    # CR.total_siphon_length = CR.profile[CR.profile['use_siphon']]['length_of_siphon(m)'].sum()
-    # CR.profile['control_structure_cost']  = CR.profile[(CR.profile['control_structure_id']>0) & ~CR.profile['use_siphon']].apply(lambda x: inlineAndSiphonControlStructures.simplified_control_structures_cost(x['bed_width'],x['water_depth'],x['freeboard']),axis='columns')
+    
     #use_siphon_v2 is the final decision on whether to use a siphon or not, 2/10/2025 Lynn
+    #this is culvert 
     CR.profile['control_structure_cost']  = CR.profile[(CR.profile['control_structure_id']>0) & ~CR.profile['use_siphon']].apply(lambda x: inlineAndSiphonControlStructures.simplified_control_structures_cost(x['bed_width'],x['water_depth'],x['freeboard'], x['siphon_pipe_D'], x['siphon_number_of_barrels']),axis='columns')
     CR.control_structure_cost = CR.profile['control_structure_cost'].sum()
-    # with open ('CR.profile_v2.pkl', 'wb') as f:
-    #     f.write(pickle.dumps(CR.profile))
-    # CR.profile = channelroute.add_control_structures_V3(CR.profile)
-    # with open ('CR.profile_v3.pkl', 'wb') as f:
-    #     f.write(pickle.dumps(CR.profile))
-
+    
     df_siphonLosses = CR.profile[CR.profile['use_siphon']==True].apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss(x['length_of_siphon(m)'], 0.013, x['siphon_velocity'], x['siphon_pipe_D']),axis='columns', result_type='expand')
     df_siphonLosses = df_siphonLosses.to_frame('siphon_head_loss_single')
     CR.profile =  CR.profile.merge(df_siphonLosses,left_index=True, right_index=True,how='left')
@@ -446,7 +447,9 @@ def costs_calc(CR):
     # CR.total_annual_loss_GL = CR.total_annual_loss['Total']/1E3
     CR.GL_delivered_per_year = CR.gross_diversions_annual_m3_per_s * 86400 / 1E6 *120 - CR.total_loss_GL_v2
     CR.dollar_per_GL_delivered = (CR.total_cost/1E6) / (CR.GL_delivered_per_year)
+    annualised_capital_cost = -npf.pmt(CR.discount_rate, CR.lifetime, CR.total_cost)
+    CR.annualised_cost_per_saleable_ML = (
+        (annualised_capital_cost + CR.OandM_cost) / (CR.GL_delivered_per_year * 1000)
+    )
     
-
-
 

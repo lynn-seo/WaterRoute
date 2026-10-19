@@ -337,3 +337,80 @@ def channel_geometry(DFLwrtNS , crossGradient , bedWidth , depthFlow , freeboard
     return (shallow_maskedCut,maskedCut,maskedFill,maskedBorrowFill,shallow_maskedoverExCut,maskedoverExCut,maskedoverExFill,waterSection,wettedPerimeterSection,full_width)
 
 
+def plot_channel_geometry(DFLwrtNS=0, crossGradient=0, bedWidth=50, depthFlow=4.4, freeboard=1, sides=2,
+    batterSides=1.5, bermSlope=1/20, batterHeight=5, bermWidth=4, bankWidth=5,
+    overExcavateBed=1, overExcavateWall=3, rockDepth=5, ax=None):
+    """Plot the cross-section returned by ``channel_geometry`` and return its axes."""
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Patch, Polygon as PolygonPatch
+
+    geometries = channel_geometry(
+        DFLwrtNS=DFLwrtNS,
+        crossGradient=crossGradient,
+        bedWidth=bedWidth,
+        depthFlow=depthFlow,
+        freeboard=freeboard,
+        sides=sides,
+        batterSides=batterSides,
+        bermSlope=bermSlope,
+        batterHeight=batterHeight,
+        bermWidth=bermWidth,
+        bankWidth=bankWidth,
+        overExcavateBed=overExcavateBed,
+        overExcavateWall=overExcavateWall,
+        rockDepth=rockDepth,
+    )
+    labels = (
+        'Soil excavation',
+        'Rock excavation',
+        'Normal fill',
+        'Borrow fill',
+        'Soil over-excavation',
+        'Rock over-excavation',
+        'Over-excavation fill',
+        'Water',
+        'Wetted perimeter',
+    )
+    colors = ('#d9a066', '#777777', '#83b96b', '#9a6fc0', '#efb27b',
+              '#555555', '#a6cf8b', '#6bb9e8', '#174a6e')
+    if ax is None:
+        _, ax = plt.subplots()
+
+    def draw_geometry(geometry, color, label):
+        if geometry is None or geometry.is_empty:
+            return
+        if geometry.geom_type == 'Polygon':
+            ax.add_patch(PolygonPatch(
+                geometry.exterior.coords,
+                closed=True,
+                facecolor=color,
+                edgecolor='black',
+                alpha=0.55,
+                label=label,
+            ))
+        elif geometry.geom_type in ('LineString', 'LinearRing'):
+            x, y = geometry.xy
+            ax.plot(x, y, color=color, linewidth=2, label=label)
+        elif hasattr(geometry, 'geoms'):
+            for part in geometry.geoms:
+                draw_geometry(part, color, label)
+
+    for geometry, color, label in zip(geometries[:9], colors, labels):
+        draw_geometry(geometry, color, label)
+
+    full_width = geometries[9]
+    ax.set_xlim(-full_width / 2, full_width / 2)
+    ax.set_xlabel('Width (m)')
+    ax.set_ylabel('Elevation relative to channel bed (m)')
+    ax.set_title('Channel cross-section')
+    ax.set_aspect('equal', adjustable='datalim')
+    handles = [
+        Patch(facecolor=color, edgecolor='black', alpha=0.55, label=label)
+        for geometry, color, label in zip(geometries[:9], colors, labels)
+        if geometry is not None and not geometry.is_empty
+    ]
+    if handles:
+        ax.legend(handles=handles, loc='best')
+    ax.grid(True, alpha=0.25)
+    return ax
+

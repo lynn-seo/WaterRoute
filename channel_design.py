@@ -57,11 +57,12 @@ livemaptiles.arrayTile.__init__ = _array_tile_init
 SETTINGS = (
     'ROUTES_DIR', 'SEQUENTIAL_RUN_TEMPLATE', 'DEM_PATH', 'ROCK_DEPTH_PATH', 'ROUTING_BOUNDS',
     'MANNING_N', 'SIDE_SLOPE', 'SAMPLE_F', 'MAX_FILL_SIPHON_ENDS',
-    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'SECTIONS',
+    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_FACTOR', 'DISCOUNT_RATE', 'SECTIONS',
 )
 ROUTES_DIR = SEQUENTIAL_RUN_TEMPLATE = DEM_PATH = ROCK_DEPTH_PATH = ROUTING_BOUNDS = None
 MANNING_N = SIDE_SLOPE = SAMPLE_F = MAX_FILL_SIPHON_ENDS = None
-MAX_RUNS = RESIDUAL_HEAD_LOSS_TOL_M = SECTIONS = None
+MAX_RUNS = RESIDUAL_HEAD_LOSS_TOL_M = CROSS_DRAINAGE_COST_FACTOR = SECTIONS = None
+DISCOUNT_RATE = 0.07
 
 
 def configure(**settings):
@@ -204,6 +205,8 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
 
     output_path = output_location(CR.routing_out_name)
 
+
+    #always insert/change parameters here to update the entire model
     paths = channelroute.elevRangePaths(
         output_path,
         dem,
@@ -226,12 +229,15 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
         rockDepth_raster=rock_depth,
         loss_value_dollar_per_ML=CR.loss_value_dollar_per_ML,
         total_linear_cost=CR.total_linear_cost,
-        total_loss_GL=CR.total_loss_GL,
-        no_cells=CR.no_cells,
+        # total_loss_GL=None, #now this is calulcated inside the cahnnelroute.py, considering configured channel dimension based on potental channel length
+        # no_cells=CR.no_cells,
         withLengthPenalty=CR.withLengthPenalty,
         cost_array_with_rock_depth=CR.cost_array_with_rock_depth,
         sunWater_route=CR.sunWater_route,
+        earthwork_cost_weight = CR.earthwork_cost_weight,
         approximate_length=CR.approximate_length,
+        discount_rate=CR.discount_rate,
+        lifespan=CR.lifetime,
     )
 
     _, profile, line = paths[list(paths.keys())[0]]
@@ -239,6 +245,10 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
 
     # Detailed cost, adjusting the distance of each reach
     channelcost.costs_calc(CR)
+    print(
+        f"Discount rate = {CR.discount_rate:.1%}; annualised cost per saleable ML = "
+        f"${CR.annualised_cost_per_saleable_ML:,.2f}"
+    )
     CR.profile.to_csv(f'{output_path}_full_profile.csv')
 
     costs = CR.__dict__.copy()
@@ -261,7 +271,8 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
 def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_slope=None,
                 bed_width=None, water_depth=None, linear_cost=None,
                 loss_value_dollar_per_ML=75, is_length_penalty=True,
-                cost_array_with_rock_depth=True, sunWater_route=False):
+                cost_array_with_rock_depth=True, sunWater_route=False, earthwork_cost_weight=1.0,
+                linear_cost_factor=1.0):
     """Configure a Channel_Route for the given section and run it."""
     if section not in SECTIONS:
         raise ValueError(f"Unknown section {section!r}; expected one of {list(SECTIONS)}")
@@ -279,21 +290,29 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.routing_finish = cfg['finish']
     CR.routing_start_elevation = cfg['start_elevation']
     CR.gross_diversions_annual_m3_per_s = cfg['gross_diversions_m3_s']
-    CR.total_linear_cost = cfg['default_linear_cost'] if linear_cost is None else linear_cost
-    CR.total_loss_GL = cfg['total_loss_GL']
+    CR.linear_cost_factor = linear_cost_factor
+    base_linear_cost = cfg['default_linear_cost'] if linear_cost is None else linear_cost
+    CR.total_linear_cost = base_linear_cost * CR.linear_cost_factor
+    print(f"Linear cost: {base_linear_cost} x {CR.linear_cost_factor} = {CR.total_linear_cost}")
+    # CR.total_loss_GL = cfg['total_loss_GL']
     CR.approximate_length = cfg['approximate_length_km']
-    CR.no_cells = cfg['no_cells']
+    # CR.no_cells = cfg['no_cells']
 
     CR.loss_value_dollar_per_ML = loss_value_dollar_per_ML
     CR.cost_array_with_rock_depth = cost_array_with_rock_depth
     CR.withLengthPenalty = is_length_penalty
     CR.sunWater_route = sunWater_route
+    CR.earthwork_cost_weight = earthwork_cost_weight
+    CR.side_slope = SIDE_SLOPE
 
     # Channel dimensions
+    CR.mannings_n = MANNING_N
     CR.ratio_width_depth = ratio_width_depth
     CR.routing_water_depth = water_depth
     CR.routing_bed_width = bed_width
     print(f"Calculated channel dimensions: slope = {CR.routing_targetSlope}, "
+          f"mannings_n = {CR.mannings_n}, "
+          f"side_slope = {CR.side_slope}, "
           f"ratio_width_depth = {CR.ratio_width_depth}, "
           f"water depth = {CR.routing_water_depth:.2f} m, bed width = {CR.routing_bed_width:.2f} m")
 
@@ -305,8 +324,9 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.lined = False
 
     # Cost model
-    CR.life_span_years = 50
-    CR.discount_rate = 0.07
+    CR.cross_drainage_cost_factor = CROSS_DRAINAGE_COST_FACTOR
+    CR.lifetime = 50
+    CR.discount_rate = DISCOUNT_RATE
     CR.rockDepth = 5  # no longer used; kept in case channelcost still reads it
     # Based on 19.4 m3/s; may be superseded by the capacity-based delivery calculation
     CR.gross_diversions_annual_l = 608.645 * 1E9
@@ -338,7 +358,8 @@ def get_cost_scalar(df, key):
 def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, water_depth=None, bed_width=None,
                                    run_name=None, section='section1', slope_for_channel_dimension=1/15000,
                                    linear_cost=None, loss_value_dollar_per_ML=75, is_length_penalty=True,
-                                   cost_array_with_rock_depth=True):
+                                   cost_array_with_rock_depth=True, earthwork_cost_weight=1.0,
+                                   linear_cost_factor=1.0):
     channel_capacity_m3_s = SECTIONS[section]['gross_diversions_m3_s']
 
     # 1 or 2 stop early; any larger value allows up to MAX_RUNS runs
@@ -358,6 +379,7 @@ def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, 
             slope, depth, width = slope_for_channel_dimension, water_depth, bed_width
         else:
             slope = prev_adjusted_slope
+            print(MANNING_N, "delete")
             depth = solve_depth_ratio(Q=channel_capacity_m3_s, S=slope, n=MANNING_N, ratio=width_to_depth_ratio)
             width = width_to_depth_ratio * depth
         seq_df.loc[row, 'width_to_depth_ratio'] = width_to_depth_ratio
@@ -369,8 +391,11 @@ def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, 
         output_path = run_channel(
             section=section, ratio_width_depth=width_to_depth_ratio, run_name=run_name,
             target_slope=slope_for_channel_dimension, bed_width=width, water_depth=depth,
-            linear_cost=linear_cost, loss_value_dollar_per_ML=loss_value_dollar_per_ML,
+            linear_cost=linear_cost, 
             is_length_penalty=is_length_penalty, cost_array_with_rock_depth=cost_array_with_rock_depth,
+            earthwork_cost_weight=earthwork_cost_weight,
+            linear_cost_factor=linear_cost_factor,
+            
         )
 
         # Collect results
@@ -419,17 +444,18 @@ def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, 
 
 
 # ---- Candidate channel designs ----
-def candidate_designs(section, ratios, velocities, min_gap=100):
+def candidate_designs(section, ratios, velocities, min_gap=500, manning_n=None, z=None):
     """
     Size a channel for each velocity. Returns tuples of
     (section, ratio, depth, width, 1-in-X slope, velocity), dropping designs whose
-    1-in-X slope is within `min_gap` of the previous one.
+    1-in-X slope is within `min_gap` of the previous one. Uses `manning_n` and
+    `z` when supplied; otherwise uses the configured `MANNING_N` and `SIDE_SLOPE`.
     """
     Q = SECTIONS[section]['gross_diversions_m3_s']
     designs = []
     for ratio in ratios:
         for V in velocities:
-            slope, depth, width = solve_S(Q=Q, V=V, ratio=ratio)
+            slope, depth, width = solve_S(Q=Q, V=V, ratio=ratio, n=manning_n, z=z)
             designs.append((section, ratio, depth, width, int(round(1 / slope)), round(V, 3)))
 
         i = 0
