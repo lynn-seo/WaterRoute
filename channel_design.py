@@ -5,8 +5,8 @@ Import this before running the notebook:
 
     from channel_design import start_map, route_with_head_loss_iteration, candidate_designs
 
-Importing it also enables KML output in fiona, silences the "Lossy conversion"
-warning and patches livemaptiles.arrayTile (see below).
+Importing it also enables KML output in fiona and silences the "Lossy conversion"
+warning. The livemaptiles server is loaded only when adding a raster map layer.
 
 Paths, hydraulics and per-section inputs are defined in the notebook and passed in
 with `configure(...)` before running anything. Functions read them when called.
@@ -24,7 +24,6 @@ from matplotlib import cm
 from pyproj import Transformer
 from scipy.optimize import root_scalar
 
-import livemaptiles
 from waterroute import channelroute, utils
 from waterroute.channel import channelcost
 
@@ -35,8 +34,6 @@ warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*Lossy conv
 
 
 
-# Patch livemaptiles to pass a pyproj Transformer without skip_equivalent
-# (fixes an argument error; added 08012026)
 def _array_tile_init(self, in_array, in_affine, in_crs):
     self.in_array = in_array
     self.in_affine = in_affine
@@ -48,10 +45,6 @@ def _array_tile_init(self, in_array, in_affine, in_crs):
     self.alpha = None
     # EPSG:3857 = spherical mercator -> the array's CRS
     self.transformer = Transformer.from_crs(3857, self.in_crs, always_xy=True)
-
-
-livemaptiles.arrayTile.__init__ = _array_tile_init
-
 
 # ---- Settings (set from the notebook with configure) ----
 SETTINGS = (
@@ -84,6 +77,10 @@ def remove_layer(the_map, name):
 
 
 def add_layer(the_map, name, array, aff, crs, scale_min, scale_max, colour_map=cm.autumn):
+    import livemaptiles
+
+    # Pass a pyproj Transformer without skip_equivalent.
+    livemaptiles.arrayTile.__init__ = _array_tile_init
     remove_layer(the_map, name)
     tile = livemaptiles.arrayTile(array, aff, crs)
     tile.scale_min = scale_min
