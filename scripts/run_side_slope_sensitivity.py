@@ -1,11 +1,9 @@
-"""Run the section 2 side-slope sensitivity sweep outside the notebook."""
+"""Run the section 2 linear-cost sensitivity sweep outside the notebook."""
 
 import os
 import sys
 import argparse
 from pathlib import Path
-
-import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
@@ -28,11 +26,11 @@ ROCK_DEPTH_PATH = Path(
     os.environ.get("WATERROUTE_ROCK_DEPTH_PATH", REPO_ROOT / "inputs/DEM/low_res_resampled.tif")
 ).expanduser().resolve()
 
-SIDE_SLOPES = (1.5, 2.0, 2.5)
-VELOCITY_RANGES = {
-    "section1": np.arange(0.490, 0.491, 0.01),
-    "section2": np.arange(0.425, 0.444, 0.005),
-}
+VERSION = "LC-SA-v2"
+SECTION = "section2"
+VELOCITY = 0.437
+SIDE_SLOPE = 2.0
+LINEAR_COST_FACTORS = (0.7, 1.3)
 RATIOS = (5,)
 MANNING_N = 0.03
 MAX_RUNS = 4
@@ -57,12 +55,7 @@ SECTIONS = {
 }
 
 
-TASKS = [
-    (section, side_slope, float(velocity))
-    for side_slope in SIDE_SLOPES
-    for section, velocities in VELOCITY_RANGES.items()
-    for velocity in velocities
-]
+TASKS = LINEAR_COST_FACTORS
 
 
 def main(task_index):
@@ -73,7 +66,7 @@ def main(task_index):
     if not 0 <= task_index < len(TASKS):
         raise ValueError(f"Task index {task_index} is out of range 0..{len(TASKS) - 1}")
 
-    section, side_slope, velocity = TASKS[task_index]
+    linear_cost_factor = TASKS[task_index]
     ROUTES_DIR.mkdir(parents=True, exist_ok=True)
     channel_design.configure(
         ROUTES_DIR=str(ROUTES_DIR),
@@ -82,7 +75,7 @@ def main(task_index):
         ROCK_DEPTH_PATH=str(ROCK_DEPTH_PATH),
         ROUTING_BOUNDS=(147, -21, 149, -19),
         MANNING_N=MANNING_N,
-        SIDE_SLOPE=side_slope,
+        SIDE_SLOPE=SIDE_SLOPE,
         SAMPLE_F=250,
         MAX_FILL_SIPHON_ENDS=5,
         MAX_RUNS=MAX_RUNS,
@@ -92,28 +85,32 @@ def main(task_index):
     )
 
     designs = candidate_designs(
-        section,
+        SECTION,
         ratios=RATIOS,
-        velocities=(velocity,),
-        z=side_slope,
+        velocities=(VELOCITY,),
+        z=SIDE_SLOPE,
     )
     print(
-        f"Task {task_index}: section={section}, velocity={velocity:.3f}, "
-        f"side slope={side_slope}; designs={designs}",
+        f"Task {task_index}: section={SECTION}, velocity={VELOCITY:.3f}, "
+        f"linear cost factor={linear_cost_factor}; designs={designs}",
         flush=True,
     )
 
     for section, ratio, depth, width, slope_1_in_x, velocity in designs:
         run_name = (
-            f"SS-SA-v1-{section}-r{ratio}-d{depth}-w{width}"
-            f"-S{slope_1_in_x}-v{velocity:.3f}-SS{side_slope:.1f}"
+            f"{VERSION}-{section}-r{ratio}-d{depth}-w{width}"
+            f"-S{slope_1_in_x}-v{velocity:.3f}"
+            f"-c{int(round(linear_cost_factor * 100))}"
         )
         existing_run_dir = ROUTES_DIR / run_name
         if existing_run_dir.exists():
             print(f"Exists, skipping: {existing_run_dir}", flush=True)
             continue
 
-        print(f"Running {run_name}; side slope={side_slope}", flush=True)
+        print(
+            f"Running {run_name}; linear cost factor={linear_cost_factor}",
+            flush=True,
+        )
         route_with_head_loss_iteration(
             number_of_runs=3,
             width_to_depth_ratio=ratio,
@@ -123,6 +120,7 @@ def main(task_index):
             section=section,
             slope_for_channel_dimension=1 / slope_1_in_x,
             earthwork_cost_weight=1,
+            linear_cost_factor=linear_cost_factor,
         )
 
 
@@ -132,7 +130,7 @@ if __name__ == "__main__":
         "--task-index",
         type=int,
         default=os.environ.get("SLURM_ARRAY_TASK_ID"),
-        help="Index into the section/side-slope/velocity combinations.",
+        help="Index into the linear-cost-factor sweep.",
     )
     args = parser.parse_args()
     if args.task_index is None:

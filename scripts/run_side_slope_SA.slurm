@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=waterroute-side-slope
+#SBATCH --job-name=waterroute-linear-cost
 #SBATCH --time=05:00:00
 #SBATCH --mem=32G
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --array=1-10
+#SBATCH --array=0-1
 #SBATCH --account=OD-239352
 
 set -euo pipefail
@@ -32,4 +32,3 @@ PYTHON="${PYTHON:-python}"
 
 exec "${PYTHON}" "${SCRIPT_DIR}/run_side_slope_sensitivity.py" \
     --task-index "${SLURM_ARRAY_TASK_ID}"
-

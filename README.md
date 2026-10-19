@@ -65,12 +65,12 @@ for section, ratio, depth, width, slope_1_in_x, velocity in candidate_designs("s
     )
 ```
 
-### Linux SLURM side-slope sensitivity run
+### Linux SLURM linear-cost sensitivity run
 
-The notebook's section 2 side-slope sweep is available as a batch job:
+The notebook's section 2 linear-cost sweep is available as a batch job:
 
 ```bash
-sbatch scripts/run_side_slope_sensitivity.slurm
+sbatch scripts/run_side_slope_SA.slurm
 ```
 
 The SLURM script expects a Python environment with the packages in
@@ -82,12 +82,10 @@ The default inputs are resolved from this repository. Set
 to override their locations. Adjust the SLURM memory and time requests for
 your cluster's limits.
 
-The SLURM array runs one section/side-slope/velocity combination per task
-(three side slopes across all configured section velocity ranges; 15 tasks
-with the current ranges). It limits concurrency to four tasks; adjust the
-`--array` directive to match your cluster capacity and velocity ranges. Each
-task uses a separate temporary working directory to prevent collisions in
-intermediate files. The runner skips a scenario if its output directory
+The SLURM array runs one linear-cost factor per task (factors 0.7 and 1.3,
+two tasks total), using section 2 at velocity 0.437 m/s and side slope 2.
+Each task uses a separate temporary working directory to prevent collisions
+in intermediate files. The runner skips a scenario if its output directory
 already exists.
 
 The example run is given in `elliot_waterroute.ipynb`. 
