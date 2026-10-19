@@ -223,23 +223,18 @@ def costs_calc(CR):
     CR.total_siphon_length = 0
     CR.cross_drain_cost = 0
     CR.profile['use_siphon'] = False
-    # CR.profile['use_siphon_v2'] = False
     CR.profile['use_cross_drain'] = False
-    # CR.profile['type_cross_drain'] = False
-    
+        
     #insert to code to debug relavant to siphon_cost
     # with open ('CR.profile.pkl', 'wb') as f:
     #     f.write(pickle.dumps(CR.profile))
 
-    if 'q40' in CR.profile.columns:
+    if 'q40' in CR.profile.columns and (CR.profile['q40'] > 0).any():
         #costs for cross drains at all streams - some of these might not be used as they will be siphons
         #cross_drain_cost,number_of_barrels,diameter = cross_drainage.select_cross_drain(cross_drain_discharge, cross_drain_length)
         df = CR.profile[CR.profile['q40']>0].apply(lambda x: cross_drainage.select_cross_drain(x['q40'],x['full_width']),axis='columns', result_type='expand')
         df.rename(columns={0:'cross_drain_cost', 1:'cross_drain_number_of_barrels', 2:'cross_drain_diameter'},inplace = True)
-        print("before cost block:", CR.profile.columns.tolist())
-        print("cross-drain df:", df.columns.tolist())
-        CR.profile =  CR.profile.merge(df,left_index=True, right_index=True,how='left') 
-        print("after cross-drain merge:", CR.profile.columns.tolist()) 
+        CR.profile =  CR.profile.merge(df,left_index=True, right_index=True,how='left')
 
         #costs for siphons at all streams - some of these might not be used as they will be cross drains
         #direct_cost,actual_D,num_barrels,V = inlineAndSiphonControlStructures.select_siphon(bedWidth,waterDepth,freeboard,capacity_m3_s,siphon_length)
@@ -455,4 +450,3 @@ def costs_calc(CR):
         (annualised_capital_cost + CR.OandM_cost) / (CR.GL_delivered_per_year * 1000)
     )
     
-
