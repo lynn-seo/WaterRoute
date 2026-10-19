@@ -10,7 +10,8 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="/home/yourusername/WaterRoute"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 
 # Each array task gets its own working directory
@@ -26,5 +27,13 @@ cd "${TASK_WORK_DIR}"
 
 PYTHON="${PYTHON:-python}"
 
-exec "${PYTHON}" "${SCRIPT_DIR}/run_side_slope_sensitivity.py" \
+# exec "${PYTHON}" "${SCRIPT_DIR}/run_side_slope_sensitivity.py" \
+#     --task-index "${SLURM_ARRAY_TASK_ID}"
+exec "${PYTHON:-python}" "${SCRIPT_DIR}/run_side_slope_sensitivity.py" \
     --task-index "${SLURM_ARRAY_TASK_ID}"
+
+echo "Current directory: $(pwd)"
+echo "Script directory: ${SCRIPT_DIR}"
+echo "Python script exists:"
+
+ls -l "${SCRIPT_DIR}/run_side_slope_sensitivity.py"
