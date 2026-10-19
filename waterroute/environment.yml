@@ -131,7 +131,7 @@ dependencies:
     - jupyterlab_widgets==3.0.16
     - kiwisolver==1.4.9
     - lazy_loader==0.4
-    - livemaptiles==0.2.0
+    - livemaptiles @ git+https://github.com/artttt/livemaptiles.git@7d9c7ac2e44399f9b071ad3fdadb6534a2ea66c3
     - llvmlite==0.46.0
     - looseversion==1.3.0
     - lxml==6.0.2
