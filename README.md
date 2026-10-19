@@ -82,10 +82,10 @@ The default inputs are resolved from this repository. Set
 to override their locations. Adjust the SLURM memory and time requests for
 your cluster's limits.
 
-The SLURM array runs one linear-cost factor per task (factors 0.7 and 1.3,
-two tasks total), using section 2 at velocity 0.437 m/s and side slope 2.
-Each task uses a separate temporary working directory to prevent collisions
-in intermediate files. The runner skips a scenario if its output directory
-already exists.
+The SLURM array runs each combination of section 2 velocity (0.425, 0.430,
+0.435, and 0.440 m/s) and linear-cost factor (0.7 and 1.3), for 8 tasks total,
+at side slope 2. Each task uses a separate temporary working directory to
+prevent collisions in intermediate files. The runner skips a scenario if its
+output directory already exists.
 
 The example run is given in `elliot_waterroute.ipynb`. 

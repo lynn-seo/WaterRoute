@@ -5,6 +5,8 @@ import sys
 import argparse
 from pathlib import Path
 
+import numpy as np
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
@@ -28,7 +30,7 @@ ROCK_DEPTH_PATH = Path(
 
 VERSION = "LC-SA-v2"
 SECTION = "section2"
-VELOCITY = 0.437
+VELOCITIES = tuple(float(v) for v in np.arange(0.425, 0.444, 0.005))
 SIDE_SLOPE = 2.0
 LINEAR_COST_FACTORS = (0.7, 1.3)
 RATIOS = (5,)
@@ -55,7 +57,11 @@ SECTIONS = {
 }
 
 
-TASKS = LINEAR_COST_FACTORS
+TASKS = [
+    (linear_cost_factor, velocity)
+    for linear_cost_factor in LINEAR_COST_FACTORS
+    for velocity in VELOCITIES
+]
 
 
 def main(task_index):
@@ -66,7 +72,7 @@ def main(task_index):
     if not 0 <= task_index < len(TASKS):
         raise ValueError(f"Task index {task_index} is out of range 0..{len(TASKS) - 1}")
 
-    linear_cost_factor = TASKS[task_index]
+    linear_cost_factor, velocity = TASKS[task_index]
     ROUTES_DIR.mkdir(parents=True, exist_ok=True)
     channel_design.configure(
         ROUTES_DIR=str(ROUTES_DIR),
@@ -87,11 +93,11 @@ def main(task_index):
     designs = candidate_designs(
         SECTION,
         ratios=RATIOS,
-        velocities=(VELOCITY,),
+        velocities=(velocity,),
         z=SIDE_SLOPE,
     )
     print(
-        f"Task {task_index}: section={SECTION}, velocity={VELOCITY:.3f}, "
+        f"Task {task_index}: section={SECTION}, velocity={velocity:.3f}, "
         f"linear cost factor={linear_cost_factor}; designs={designs}",
         flush=True,
     )
@@ -130,7 +136,7 @@ if __name__ == "__main__":
         "--task-index",
         type=int,
         default=os.environ.get("SLURM_ARRAY_TASK_ID"),
-        help="Index into the linear-cost-factor sweep.",
+        help="Index into the velocity/linear-cost-factor sweep.",
     )
     args = parser.parse_args()
     if args.task_index is None:

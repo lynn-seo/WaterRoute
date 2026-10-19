@@ -228,8 +228,8 @@ def costs_calc(CR):
     # CR.profile['type_cross_drain'] = False
     
     #insert to code to debug relavant to siphon_cost
-    with open ('CR.profile.pkl', 'wb') as f:
-        f.write(pickle.dumps(CR.profile))
+    # with open ('CR.profile.pkl', 'wb') as f:
+    #     f.write(pickle.dumps(CR.profile))
 
     if 'q40' in CR.profile.columns:
         #costs for cross drains at all streams - some of these might not be used as they will be siphons
