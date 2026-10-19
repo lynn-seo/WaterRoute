@@ -242,10 +242,7 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
 
     # Detailed cost, adjusting the distance of each reach
     channelcost.costs_calc(CR)
-    print(
-        f"Discount rate = {CR.discount_rate:.1%}; annualised cost per saleable ML = "
-        f"${CR.annualised_cost_per_saleable_ML:,.2f}"
-    )
+    
     CR.profile.to_csv(f'{output_path}_full_profile.csv')
 
     costs = CR.__dict__.copy()

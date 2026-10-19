@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=waterroute-linear-cost
+#SBATCH --job-name=waterroute-sensitivity
 #SBATCH --time=05:00:00
 #SBATCH --mem=32G
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --array=0-7
+#SBATCH --array=0-22%4
 #SBATCH --account=OD-239352
 
 set -euo pipefail
