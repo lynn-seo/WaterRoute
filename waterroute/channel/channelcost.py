@@ -285,16 +285,20 @@ def costs_calc(CR):
     CR.profile['control_structure_cost']  = CR.profile[(CR.profile['control_structure_id']>0) & ~CR.profile['use_siphon']].apply(lambda x: inlineAndSiphonControlStructures.simplified_control_structures_cost(x['bed_width'],x['water_depth'],x['freeboard']),axis='columns')
     CR.control_structure_cost = CR.profile['control_structure_cost'].sum()
     
-    df_siphonLosses = CR.profile[CR.profile['use_siphon']==True].apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss(x['length_of_siphon(m)'], 0.013, x['siphon_velocity'], x['siphon_pipe_D']),axis='columns', result_type='expand')
-    df_siphonLosses = df_siphonLosses.to_frame('siphon_head_loss_single')
+    siphon_rows = CR.profile[CR.profile['use_siphon']]
+    df_siphonLosses = pd.DataFrame(index=siphon_rows.index, columns=['siphon_head_loss_single'], dtype=float)
+    if not siphon_rows.empty:
+        df_siphonLosses['siphon_head_loss_single'] = siphon_rows.apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss(x['length_of_siphon(m)'], 0.013, x['siphon_velocity'], x['siphon_pipe_D']),axis='columns')
     CR.profile =  CR.profile.merge(df_siphonLosses,left_index=True, right_index=True,how='left')
     
-    df_siphonLosses_v2 = CR.profile[CR.profile['use_siphon']==True].apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss_v2(x['length_of_siphon(m)'], 0.013, x['capacity_m3_per_s'], x['siphon_pipe_D'], x['siphon_number_of_barrels']),axis='columns', result_type='expand')
-    df_siphonLosses_v2 = df_siphonLosses_v2.to_frame('siphon_head_loss_allBarrels')
+    df_siphonLosses_v2 = pd.DataFrame(index=siphon_rows.index, columns=['siphon_head_loss_allBarrels'], dtype=float)
+    if not siphon_rows.empty:
+        df_siphonLosses_v2['siphon_head_loss_allBarrels'] = siphon_rows.apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss_v2(x['length_of_siphon(m)'], 0.013, x['capacity_m3_per_s'], x['siphon_pipe_D'], x['siphon_number_of_barrels']),axis='columns')
     CR.profile =  CR.profile.merge(df_siphonLosses_v2,left_index=True, right_index=True,how='left')
 
-    df_siphon_inletOutlet_Losses = CR.profile[CR.profile['use_siphon']==True].apply(lambda x: inlineAndSiphonControlStructures.siphon_inletOutlet_loss(x['siphon_velocity']),axis='columns', result_type='expand')
-    df_siphon_inletOutlet_Losses = df_siphon_inletOutlet_Losses.to_frame('siphon_inletOutlet_loss')
+    df_siphon_inletOutlet_Losses = pd.DataFrame(index=siphon_rows.index, columns=['siphon_inletOutlet_loss'], dtype=float)
+    if not siphon_rows.empty:
+        df_siphon_inletOutlet_Losses['siphon_inletOutlet_loss'] = siphon_rows.apply(lambda x: inlineAndSiphonControlStructures.siphon_inletOutlet_loss(x['siphon_velocity']),axis='columns')
     CR.profile =  CR.profile.merge(df_siphon_inletOutlet_Losses,left_index=True, right_index=True,how='left')
     
     #add extra costs for bays (skip first control structure)
