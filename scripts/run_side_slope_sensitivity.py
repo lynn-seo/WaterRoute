@@ -16,7 +16,7 @@ from channel_design import candidate_designs, route_with_head_loss_iteration
 
 PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel"
 ROUTES_DIR = Path(
-    os.environ.get("WATERROUTE_ROUTES_DIR", PROJECT_ROOT / "0_run1")
+    os.environ.get("WATERROUTE_ROUTES_DIR", PROJECT_ROOT / "0_run2")
 ).expanduser().resolve()
 SEQUENTIAL_RUN_TEMPLATE = Path(
     os.environ.get("WATERROUTE_SEQUENTIAL_RUN_TEMPLATE", REPO_ROOT / "inputs/Sequential_Run.csv")
@@ -30,20 +30,47 @@ ROCK_DEPTH_PATH = Path(
 
 SECTION = "section2"
 BASE_VELOCITY = 0.437
-SIDE_SLOPE_VELOCITIES = tuple(
-    float(v) for v in np.arange(0.425, 0.444, 0.005)
-)
-SIDE_SLOPE = 2.0
-LINEAR_COST_FACTORS = (0.7, 1.3)
-EARTHWORK_COST_WEIGHTS = (0.7, 1.3)
+
+
+class VELOCITIES(tuple):
+    """Tuple-like container for the channel velocities used in sensitivity runs."""
+
+    def __new__(cls, start: float = 0.421, stop: float = 0.451, step: float = 0.002):
+        values = tuple(float(v) for v in np.arange(start, stop, step))
+        return super().__new__(cls, values)
+
+    @property
+    def min_value(self) -> float:
+        return float(min(self)) if self else np.nan
+
+    @property
+    def max_value(self) -> float:
+        return float(max(self)) if self else np.nan
+
+    def contains(self, velocity: float, *, tol: float = 1e-12) -> bool:
+        velocity = float(velocity)
+        return any(np.isclose(v, velocity, atol=tol, rtol=0.0) for v in self)
+
+    def as_list(self):
+        return list(self)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({list(self)!r})"
+
+
+VELOCITIES = VELOCITIES(0.421, 0.451, 0.002)
+default_SIDE_SLOPE = 2
+LINEAR_COST_FACTORS = (0.7, 1, 1.3)
+EARTHWORK_COST_WEIGHTS = (0.7, 1, 1.3)
 SIDE_SLOPES = (1.5, 2.0, 2.5)
-CROSS_DRAINAGE_COST_FACTORS = (0.5, 1.5)
-MANNING_N_VALUES = (0.022, 0.036)
+CROSS_DRAINAGE_COST_FACTORS = (0.5, 1, 1.5)
+MANNING_N_VALUES = (0.022, 0.031, 0.036)
 DISCOUNT_RATES = (0.03, 0.07, 0.1)
 RATIOS = (5,)
-MANNING_N = 0.03
-MAX_RUNS = 4
-RESIDUAL_HEAD_LOSS_TOL_M = 0.1
+default_MANNING_N = 0.03
+default_DISCOUNT_RATE = 0.07
+MAX_RUNS = 5
+RESIDUAL_HEAD_LOSS_TOL_M = 0.1  # head difference tolerance to finish iterative runs
 SECTIONS = {
     "section1": {
         "start": (147.31, -19.81),
@@ -59,36 +86,41 @@ SECTIONS = {
         "start_elevation": 40,
         "gross_diversions_m3_s": 10,
         "default_linear_cost": 17772388,
-        "approximate_length_km": 40,
+        "approximate_length_km": 30,
     },
 }
 
 
 TASKS = (
     [
-        ("LC-SA-v2", BASE_VELOCITY, "linear_cost_factor", factor)
+        ("LC-SA-v2", velocity, "linear_cost_factor", factor)
         for factor in LINEAR_COST_FACTORS
+        for velocity in VELOCITIES
     ]
     + [
-        ("earthwork-SA-v1", BASE_VELOCITY, "earthwork_cost_weight", weight)
+        ("earthwork-SA-v1", velocity, "earthwork_cost_weight", weight)
         for weight in EARTHWORK_COST_WEIGHTS
+        for velocity in VELOCITIES
     ]
     + [
         ("SS-SA-v1", velocity, "side_slope", side_slope)
         for side_slope in SIDE_SLOPES
-        for velocity in SIDE_SLOPE_VELOCITIES
+        for velocity in VELOCITIES
     ]
     + [
-        ("CD-SA-v1", BASE_VELOCITY, "cross_drainage_cost_factor", factor)
+        ("CD-SA-v1", velocity, "cross_drainage_cost_factor", factor)
         for factor in CROSS_DRAINAGE_COST_FACTORS
+        for velocity in VELOCITIES
     ]
     + [
-        ("MN-SA-v1", BASE_VELOCITY, "manning_n", manning_n)
+        ("MN-SA-v1", velocity, "manning_n", manning_n)
         for manning_n in MANNING_N_VALUES
+        for velocity in VELOCITIES
     ]
     + [
-        ("DR-SA-v1", BASE_VELOCITY, "discount_rate", rate)
+        ("DR-SA-v1", velocity, "discount_rate", rate)
         for rate in DISCOUNT_RATES
+        for velocity in VELOCITIES
     ]
 )
 
@@ -102,12 +134,12 @@ def main(task_index):
         raise ValueError(f"Task index {task_index} is out of range 0..{len(TASKS) - 1}")
 
     version, velocity, parameter, value = TASKS[task_index]
-    side_slope = value if parameter == "side_slope" else SIDE_SLOPE
-    manning_n = value if parameter == "manning_n" else MANNING_N
+    side_slope = value if parameter == "side_slope" else default_SIDE_SLOPE
+    manning_n = value if parameter == "manning_n" else default_MANNING_N
     cross_drainage_cost_factor = (
         value if parameter == "cross_drainage_cost_factor" else 1
     )
-    discount_rate = value if parameter == "discount_rate" else 0.07
+    discount_rate = value if parameter == "discount_rate" else default_DISCOUNT_RATE
     ROUTES_DIR.mkdir(parents=True, exist_ok=True)
     channel_design.configure(
         ROUTES_DIR=str(ROUTES_DIR),
