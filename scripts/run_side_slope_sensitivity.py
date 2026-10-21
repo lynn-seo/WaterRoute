@@ -60,15 +60,17 @@ class VELOCITIES(tuple):
 
 VELOCITIES = VELOCITIES(0.421, 0.451, 0.002)
 default_SIDE_SLOPE = 2
+default_MANNING_N = 0.03
+default_DISCOUNT_RATE = 0.07
+
+SIDE_SLOPES = (1.5, 2.0, 2.5)
 LINEAR_COST_FACTORS = (0.7, 1, 1.3)
 EARTHWORK_COST_WEIGHTS = (0.7, 1, 1.3)
-SIDE_SLOPES = (1.5, 2.0, 2.5)
 CROSS_DRAINAGE_COST_FACTORS = (0.5, 1, 1.5)
 MANNING_N_VALUES = (0.022, 0.031, 0.036)
 DISCOUNT_RATES = (0.03, 0.07, 0.1)
 RATIOS = (5,)
-default_MANNING_N = 0.03
-default_DISCOUNT_RATE = 0.07
+
 MAX_RUNS = 5
 RESIDUAL_HEAD_LOSS_TOL_M = 0.1  # head difference tolerance to finish iterative runs
 SECTIONS = {
@@ -178,11 +180,11 @@ def main(task_index):
                 f"{int(round(value * 100))}"
             )
         elif parameter == "side_slope":
-            suffix = f"-SS{float(round(value, 2))}"
+            suffix = f"-SS{float(round(value, 3))}"
         elif parameter == "cross_drainage_cost_factor":
-            suffix = f"-CD{float(round(value, 2))}"
+            suffix = f"-CD{float(round(value, 3))}"
         elif parameter == "manning_n":
-            suffix = f"-ME{float(round(value, 2))}"
+            suffix = f"-ME{float(round(value, 3))}"
         else:
             suffix = f"-DR{value:.3f}"
         run_name = (
