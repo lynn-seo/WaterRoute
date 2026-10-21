@@ -177,7 +177,7 @@ def main(task_index):
         if parameter in ("linear_cost_factor", "earthwork_cost_weight"):
             suffix = (
                 f"-{'c' if parameter == 'linear_cost_factor' else 'EW'}"
-                f"{int(round(value * 100))}"
+                f"{float(round(value, 3))}"
             )
         elif parameter == "side_slope":
             suffix = f"-SS{float(round(value, 3))}"
