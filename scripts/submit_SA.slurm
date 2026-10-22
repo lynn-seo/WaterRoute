@@ -26,9 +26,9 @@ cd "${TASK_WORK_DIR}"
 # conda activate channelroute
 
 echo "SCRIPT_DIR: ${SCRIPT_DIR}"
-ls -l "${SCRIPT_DIR}/run_side_slope_sensitivity.py"
+ls -l "${SCRIPT_DIR}/TASKS_SA.py"
 
 PYTHON="${PYTHON:-python}"
 
-exec "${PYTHON}" "${SCRIPT_DIR}/run_side_slope_sensitivity.py" \
+exec "${PYTHON}" "${SCRIPT_DIR}/TASKS_SA.py" \
     --task-index "${SLURM_ARRAY_TASK_ID}"
