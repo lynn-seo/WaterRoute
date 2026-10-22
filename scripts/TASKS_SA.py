@@ -95,32 +95,32 @@ SECTIONS = {
 
 TASKS = (
     [
-    #     ("LC-SA-v2", velocity, "linear_cost_factor", factor)
+    #     ("LC", velocity, "linear_cost_factor", factor)
     #     for factor in LINEAR_COST_FACTORS
     #     for velocity in VELOCITIES
     # ]
     # + [
-    #     ("earthwork-SA-v1", velocity, "earthwork_cost_weight", weight)
+    #     ("EW", velocity, "earthwork_cost_weight", weight)
     #     for weight in EARTHWORK_COST_WEIGHTS
     #     for velocity in VELOCITIES
     # ]
     # + [
-    #     ("SS-SA-v1", velocity, "side_slope", side_slope)
+    #     ("SS-", velocity, "side_slope", side_slope)
     #     for side_slope in SIDE_SLOPES
     #     for velocity in VELOCITIES
     # ]
     # + [
-    #     ("CD-SA-v1", velocity, "cross_drainage_cost_factor", factor)
+    #     ("CD-", velocity, "cross_drainage_cost_factor", factor)
     #     for factor in CROSS_DRAINAGE_COST_FACTORS
     #     for velocity in VELOCITIES
     # ]
     # + [
-    #     ("MN-SA-v1", velocity, "manning_n", manning_n)
+    #     ("MN-SA", velocity, "manning_n", manning_n)
     #     for manning_n in MANNING_N_VALUES
     #     for velocity in VELOCITIES
     # ]
     # + [
-        ("DR-SA-v1", velocity, "discount_rate", rate)
+        ("DR", velocity, "discount_rate", rate)
         for rate in DISCOUNT_RATES
         for velocity in VELOCITIES
     ]

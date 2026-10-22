@@ -303,7 +303,17 @@ def crossDrainage (dem,aff,crs,path,thresholdAreaKm=1,catchDrainDepth=2, name=No
     # shapes = features.shapes(sc, mask=mask,connectivity=8,transform=aff,)
     # Fix: cast sc to int32 because rasterio doesn't support int64
     shapes = features.shapes(sc.astype(np.int32), mask=mask,connectivity=8,transform=aff,)
-    crossingsGDF = gpd.GeoDataFrame([{'id':int(ident),'geom':shape(poly),'centroid':shape(poly).centroid, 'area_km':_geod.geometry_area_perimeter(shape(poly))[0]/1000000} for poly,ident in shapes])
+    crossingsGDF = gpd.GeoDataFrame(
+        [
+            {
+                "id": int(ident),
+                "geom": shape(poly),
+                "centroid": shape(poly).centroid,
+                "area_km": abs(_geod.geometry_area_perimeter(shape(poly))[0]) / 1_000_000,
+            }
+            for poly, ident in shapes
+        ]
+    )
     crossingsGDF.set_index('id',inplace=True)
     full_crossingsDF = crossingsGDF.join(crossingsDF)
     full_crossingsDF['q40'] = 0
