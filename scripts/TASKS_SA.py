@@ -14,9 +14,9 @@ import channel_design
 from channel_design import candidate_designs, route_with_head_loss_iteration
 
 
-PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel"
+PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel/run3"
 ROUTES_DIR = Path(
-    os.environ.get("WATERROUTE_ROUTES_DIR", PROJECT_ROOT / "0_run2")
+    os.environ.get("WATERROUTE_ROUTES_DIR", PROJECT_ROOT)
 ).expanduser().resolve()
 SEQUENTIAL_RUN_TEMPLATE = Path(
     os.environ.get("WATERROUTE_SEQUENTIAL_RUN_TEMPLATE", REPO_ROOT / "inputs/Sequential_Run.csv")
