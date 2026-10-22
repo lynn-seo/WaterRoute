@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --array=0-269%4
+#SBATCH --array=0-287%4
 #SBATCH --account=OD-239352
 
 set -euo pipefail
