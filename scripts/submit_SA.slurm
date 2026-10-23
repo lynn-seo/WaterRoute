@@ -5,14 +5,12 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
+#SBATCH --array=0-47%16
 #SBATCH --account=OD-239352
 
 set -euo pipefail
 
-if [[ -z "${SLURM_ARRAY_TASK_ID:-}" ]]; then
-    echo "Submit this array with scripts/submit_SA.sh." >&2
-    exit 1
-fi
+TASK_PARAMETER="${1:?Submit with: sbatch submit_SA.slurm <LC|EW|SS|CD|MN|DR>}"
 
 # SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_DIR="/scratch3/seo010/waterRoute/scripts"
@@ -35,4 +33,5 @@ ls -l "${SCRIPT_DIR}/TASKS_SA.py"
 PYTHON="${PYTHON:-python}"
 
 exec "${PYTHON}" "${SCRIPT_DIR}/TASKS_SA.py" \
-    --task-index "${SLURM_ARRAY_TASK_ID}"
+    --task-index "${SLURM_ARRAY_TASK_ID}" \
+    --parameter "${TASK_PARAMETER}"

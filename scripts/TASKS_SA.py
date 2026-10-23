@@ -10,6 +10,10 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
+import channel_design
+from channel_design import candidate_designs, route_with_head_loss_iteration
+
+
 PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel/run3"
 ROUTES_DIR = Path(
     os.environ.get("WATERROUTE_ROUTES_DIR", PROJECT_ROOT)
@@ -54,6 +58,7 @@ class VELOCITIES(tuple):
         return f"{self.__class__.__name__}({list(self)!r})"
 
 
+#16 velocities
 VELOCITIES = VELOCITIES(0.421, 0.451, 0.002)
 default_SIDE_SLOPE = 2
 default_MANNING_N = 0.03
@@ -91,6 +96,11 @@ SECTIONS = {
 
 TASKS = (
     [
+        ("DR", velocity, "discount_rate", rate)
+        for rate in DISCOUNT_RATES
+        for velocity in VELOCITIES
+    ]
+    + [
         ("LC", velocity, "linear_cost_factor", factor)
         for factor in LINEAR_COST_FACTORS
         for velocity in VELOCITIES
@@ -115,26 +125,38 @@ TASKS = (
         for manning_n in MANNING_N_VALUES
         for velocity in VELOCITIES
     ]
-    + [
-        ("DR", velocity, "discount_rate", rate)
-        for rate in DISCOUNT_RATES
-        for velocity in VELOCITIES
-    ]
 )
 
+TASK_GROUPS = {
+    "LC": "LC",
+    "EW": "EW",
+    "SS": "SS-",
+    "CD": "CD-",
+    "MN": "MN-SA",
+    "DR": "DR",
+}
 
-def main(task_index):
-    if not 0 <= task_index < len(TASKS):
-        raise ValueError(f"Task index {task_index} is out of range 0..{len(TASKS) - 1}")
+
+def main(task_index, task_group):
+    if task_group not in TASK_GROUPS:
+        raise ValueError(
+            f"Unknown task group {task_group!r}; choose from {', '.join(TASK_GROUPS)}"
+        )
+
+    selected_tasks = [
+        task for task in TASKS if task[0] == TASK_GROUPS[task_group]
+    ]
+    if not 0 <= task_index < len(selected_tasks):
+        raise ValueError(
+            f"Task index {task_index} is out of range for {task_group}; "
+            f"expected 0..{len(selected_tasks) - 1}"
+        )
 
     for input_path in (SEQUENTIAL_RUN_TEMPLATE, DEM_PATH, ROCK_DEPTH_PATH):
         if not input_path.is_file():
             raise FileNotFoundError(f"Required input file not found: {input_path}")
 
-    import channel_design
-    from channel_design import candidate_designs, route_with_head_loss_iteration
-
-    version, velocity, parameter, value = TASKS[task_index]
+    version, velocity, parameter, value = selected_tasks[task_index]
     side_slope = value if parameter == "side_slope" else default_SIDE_SLOPE
     manning_n = value if parameter == "manning_n" else default_MANNING_N
     cross_drainage_cost_factor = (
@@ -221,9 +243,15 @@ if __name__ == "__main__":
         "--task-index",
         type=int,
         default=os.environ.get("SLURM_ARRAY_TASK_ID"),
-        help="Index into the combined notebook sensitivity scenarios.",
+        help="Index within the selected task group.",
+    )
+    parser.add_argument(
+        "--parameter",
+        required=True,
+        choices=TASK_GROUPS,
+        help="Task group to run (LC, EW, SS, CD, MN, or DR).",
     )
     args = parser.parse_args()
     if args.task_index is None:
         parser.error("provide --task-index or run as a SLURM array task")
-    main(int(args.task_index))
+    main(int(args.task_index), args.parameter)
