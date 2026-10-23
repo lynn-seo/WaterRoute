@@ -10,10 +10,6 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-import channel_design
-from channel_design import candidate_designs, route_with_head_loss_iteration
-
-
 PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel/run3"
 ROUTES_DIR = Path(
     os.environ.get("WATERROUTE_ROUTES_DIR", PROJECT_ROOT)
@@ -68,7 +64,7 @@ LINEAR_COST_FACTORS = (0.7, 1, 1.3)
 EARTHWORK_COST_WEIGHTS = (0.7, 1, 1.3)
 CROSS_DRAINAGE_COST_FACTORS = (0.5, 1, 1.5)
 MANNING_N_VALUES = (0.022, 0.031, 0.036)
-DISCOUNT_RATES = (0.03, 0.07, 0.1)
+DISCOUNT_RATES = (0.030, 0.070, 0.100)
 RATIOS = (5,)
 
 MAX_RUNS = 5
@@ -95,31 +91,31 @@ SECTIONS = {
 
 TASKS = (
     [
-    #     ("LC", velocity, "linear_cost_factor", factor)
-    #     for factor in LINEAR_COST_FACTORS
-    #     for velocity in VELOCITIES
-    # ]
-    # + [
-    #     ("EW", velocity, "earthwork_cost_weight", weight)
-    #     for weight in EARTHWORK_COST_WEIGHTS
-    #     for velocity in VELOCITIES
-    # ]
-    # + [
-    #     ("SS-", velocity, "side_slope", side_slope)
-    #     for side_slope in SIDE_SLOPES
-    #     for velocity in VELOCITIES
-    # ]
-    # + [
-    #     ("CD-", velocity, "cross_drainage_cost_factor", factor)
-    #     for factor in CROSS_DRAINAGE_COST_FACTORS
-    #     for velocity in VELOCITIES
-    # ]
-    # + [
-    #     ("MN-SA", velocity, "manning_n", manning_n)
-    #     for manning_n in MANNING_N_VALUES
-    #     for velocity in VELOCITIES
-    # ]
-    # + [
+        ("LC", velocity, "linear_cost_factor", factor)
+        for factor in LINEAR_COST_FACTORS
+        for velocity in VELOCITIES
+    ]
+    + [
+        ("EW", velocity, "earthwork_cost_weight", weight)
+        for weight in EARTHWORK_COST_WEIGHTS
+        for velocity in VELOCITIES
+    ]
+    + [
+        ("SS-", velocity, "side_slope", side_slope)
+        for side_slope in SIDE_SLOPES
+        for velocity in VELOCITIES
+    ]
+    + [
+        ("CD-", velocity, "cross_drainage_cost_factor", factor)
+        for factor in CROSS_DRAINAGE_COST_FACTORS
+        for velocity in VELOCITIES
+    ]
+    + [
+        ("MN-SA", velocity, "manning_n", manning_n)
+        for manning_n in MANNING_N_VALUES
+        for velocity in VELOCITIES
+    ]
+    + [
         ("DR", velocity, "discount_rate", rate)
         for rate in DISCOUNT_RATES
         for velocity in VELOCITIES
@@ -128,12 +124,15 @@ TASKS = (
 
 
 def main(task_index):
+    if not 0 <= task_index < len(TASKS):
+        raise ValueError(f"Task index {task_index} is out of range 0..{len(TASKS) - 1}")
+
     for input_path in (SEQUENTIAL_RUN_TEMPLATE, DEM_PATH, ROCK_DEPTH_PATH):
         if not input_path.is_file():
             raise FileNotFoundError(f"Required input file not found: {input_path}")
 
-    if not 0 <= task_index < len(TASKS):
-        raise ValueError(f"Task index {task_index} is out of range 0..{len(TASKS) - 1}")
+    import channel_design
+    from channel_design import candidate_designs, route_with_head_loss_iteration
 
     version, velocity, parameter, value = TASKS[task_index]
     side_slope = value if parameter == "side_slope" else default_SIDE_SLOPE
