@@ -162,10 +162,12 @@ def main(task_index, task_group):
     cross_drainage_cost_factor = (
         value if parameter == "cross_drainage_cost_factor" else 1
     )
+    linear_cost_factor = value if parameter == "linear_cost_factor" else 1
     discount_rate = value if parameter == "discount_rate" else default_DISCOUNT_RATE
-    ROUTES_DIR.mkdir(parents=True, exist_ok=True)
+    task_routes_dir = ROUTES_DIR / task_group
+    task_routes_dir.mkdir(parents=True, exist_ok=True)
     channel_design.configure(
-        ROUTES_DIR=str(ROUTES_DIR),
+        ROUTES_DIR=str(task_routes_dir),
         SEQUENTIAL_RUN_TEMPLATE=str(SEQUENTIAL_RUN_TEMPLATE),
         DEM_PATH=str(DEM_PATH),
         ROCK_DEPTH_PATH=str(ROCK_DEPTH_PATH),
@@ -177,6 +179,7 @@ def main(task_index, task_group):
         MAX_RUNS=MAX_RUNS,
         RESIDUAL_HEAD_LOSS_TOL_M=RESIDUAL_HEAD_LOSS_TOL_M,
         CROSS_DRAINAGE_COST_FACTOR=cross_drainage_cost_factor,
+        LINEAR_COST_FACTOR=linear_cost_factor,
         DISCOUNT_RATE=discount_rate,
         SECTIONS=SECTIONS,
     )
@@ -212,19 +215,12 @@ def main(task_index, task_group):
             f"{version}-{section}-r{ratio}-d{depth}-w{width}"
             f"-S{slope_1_in_x}-v{velocity:.3f}{suffix}"
         )
-        existing_run_dir = ROUTES_DIR / run_name
+        existing_run_dir = task_routes_dir / run_name
         if existing_run_dir.exists():
             print(f"Exists, skipping: {existing_run_dir}", flush=True)
             continue
 
         print(f"Running {run_name}; {parameter}={value}", flush=True)
-        route_kwargs = {
-            "earthwork_cost_weight": (
-                value if parameter == "earthwork_cost_weight" else 1
-            ),
-        }
-        if parameter == "linear_cost_factor":
-            route_kwargs["linear_cost_factor"] = value
         route_with_head_loss_iteration(
             number_of_runs=3,
             width_to_depth_ratio=ratio,
@@ -233,7 +229,9 @@ def main(task_index, task_group):
             run_name=run_name,
             section=section,
             slope_for_channel_dimension=1 / slope_1_in_x,
-            **route_kwargs,
+            earthwork_cost_weight=(
+                value if parameter == "earthwork_cost_weight" else 1
+            ),
         )
 
 
