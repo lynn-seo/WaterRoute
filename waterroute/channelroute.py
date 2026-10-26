@@ -166,7 +166,7 @@ def route_through_array(array, start, end, fully_connected=True,
 
 #this add linear cost on the earthwork cost array
 def route_through_array_length_penalty(array, start, end,
-                                       lenghth_penalty_per_km=None,
+                                    #    lenghth_penalty_per_km=None,
                                        fully_connected=True,
                                        geometric=True):
     """
@@ -185,8 +185,9 @@ def route_through_array_length_penalty(array, start, end,
         lenghth_penalty_per_km = 0
 
     # print(f'length_penalty ($/cell)= {length_penalty}')
-    print(f'length_penalty ($/m)= {lenghth_penalty_per_km/1000}')
-    penalised_array = array + lenghth_penalty_per_km/1000
+    # print(f'length_penalty ($/m)= {lenghth_penalty_per_km/1000}')
+    # penalised_array = array + lenghth_penalty_per_km/1000
+    penalised_array = array
     if geometric:
         mcp_class = MCP_Geometric
     else:
@@ -801,10 +802,10 @@ def calc_path(output_path, weight, target_elev, startCell,finishCell,aff, loss_v
     # print(f'length_penalty ($/cell)= {legnth_penalty}')
     # print('approximated length (km) =',approximate_length)
     # print('linear cost per km =',lenghth_penalty_per_km)
-    
+    weight = weight + lenghth_penalty_per_km/1000*linear_cost_factor
+    # penalised_array = array + lenghth_penalty_per_km/1000
     if (withLengthPenalty):
-        indices, totalWeight = route_through_array_length_penalty(weight, startCell, finishCell,geometric=True, 
-                                                                  lenghth_penalty_per_km= lenghth_penalty_per_km*linear_cost_factor)
+        indices, totalWeight = route_through_array_length_penalty(weight, startCell, finishCell,geometric=True)
     else:
         indices, totalWeight = route_through_array(weight, startCell, finishCell,geometric=True)
     
