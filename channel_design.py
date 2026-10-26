@@ -50,11 +50,14 @@ def _array_tile_init(self, in_array, in_affine, in_crs):
 SETTINGS = (
     'ROUTES_DIR', 'SEQUENTIAL_RUN_TEMPLATE', 'DEM_PATH', 'ROCK_DEPTH_PATH', 'ROUTING_BOUNDS',
     'MANNING_N', 'SIDE_SLOPE', 'SAMPLE_F', 'MAX_FILL_SIPHON_ENDS',
-    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_FACTOR', 'DISCOUNT_RATE', 'SECTIONS',
+    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_FACTOR',
+    'EARTHWORK_COST_FACTOR', 'LINEAR_COST_FACTOR', 'DISCOUNT_RATE', 'SECTIONS',
 )
 ROUTES_DIR = SEQUENTIAL_RUN_TEMPLATE = DEM_PATH = ROCK_DEPTH_PATH = ROUTING_BOUNDS = None
 MANNING_N = SIDE_SLOPE = SAMPLE_F = MAX_FILL_SIPHON_ENDS = None
 MAX_RUNS = RESIDUAL_HEAD_LOSS_TOL_M = CROSS_DRAINAGE_COST_FACTOR = SECTIONS = None
+EARTHWORK_COST_FACTOR = 1.0
+LINEAR_COST_FACTOR = 1.0
 DISCOUNT_RATE = 0.07
 
 
@@ -98,7 +101,7 @@ def add_layer(the_map, name, array, aff, crs, scale_min, scale_max, colour_map=c
 
 
 def start_map(start=(145.829917, -24.693563)):
-    """Create the interactive map (also used by run_routing). `start` is (lon, lat)."""
+    """Create the interactive map (also used by runner). `start` is (lon, lat)."""
     global _map
     m = ipyleaflet.Map(center=start[::-1], zoom=8)
     m.scroll_wheel_zoom = True
@@ -192,7 +195,7 @@ def annualised_cost(cost, discount_rate=0.07, lifespan=50, om_fraction=0.02):
 
 
 # ---- Run one route ----
-def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
+def runner(CR, dem_ratio=1, dem=None, aff=None, crs=None):
     """Route a channel for the configured Channel_Route CR; returns the output path prefix."""
     if dem is None or aff is None or crs is None:
         dem, aff, crs = utils.load_raster(DEM_PATH, CR.routing_bounds, 1, dem_ratio, utils.Resampling.average)
@@ -268,8 +271,8 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
 def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_slope=None,
                 bed_width=None, water_depth=None, linear_cost=None,
                 loss_value_dollar_per_ML=75, is_length_penalty=True,
-                cost_array_with_rock_depth=True, sunWater_route=False, earthwork_cost_weight=1.0,
-                linear_cost_factor=1.0):
+                cost_array_with_rock_depth=True, sunWater_route=False, earthwork_cost_weight=None,
+                linear_cost_factor=None):
     """Configure a Channel_Route for the given section and run it."""
     if section not in SECTIONS:
         raise ValueError(f"Unknown section {section!r}; expected one of {list(SECTIONS)}")
@@ -287,7 +290,9 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.routing_finish = cfg['finish']
     CR.routing_start_elevation = cfg['start_elevation']
     CR.gross_diversions_annual_m3_per_s = cfg['gross_diversions_m3_s']
-    CR.linear_cost_factor = linear_cost_factor
+    CR.linear_cost_factor = (
+        LINEAR_COST_FACTOR if linear_cost_factor is None else linear_cost_factor
+    )
     base_linear_cost = cfg['default_linear_cost'] if linear_cost is None else linear_cost
     CR.total_linear_cost = base_linear_cost * CR.linear_cost_factor
     # print(f"Linear cost: {base_linear_cost} x {CR.linear_cost_factor} = {CR.total_linear_cost}")
@@ -299,7 +304,11 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.cost_array_with_rock_depth = cost_array_with_rock_depth
     CR.withLengthPenalty = is_length_penalty
     CR.sunWater_route = sunWater_route
-    CR.earthwork_cost_weight = earthwork_cost_weight
+    CR.earthwork_cost_weight = (
+        EARTHWORK_COST_FACTOR
+        if earthwork_cost_weight is None
+        else earthwork_cost_weight
+    )
     CR.side_slope = SIDE_SLOPE
 
     # Channel dimensions
@@ -339,7 +348,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.real_channelSlope = 1 / 12000
     CR.bay_minWaterDepth = 1
 
-    return run_routing(CR=CR, dem_ratio=1)
+    return runner(CR=CR, dem_ratio=1)
 
 
 # ---- Sequential runs ----
@@ -355,8 +364,8 @@ def get_cost_scalar(df, key):
 def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, water_depth=None, bed_width=None,
                                    run_name=None, section='section1', slope_for_channel_dimension=1/15000,
                                    linear_cost=None, loss_value_dollar_per_ML=75, is_length_penalty=True,
-                                   cost_array_with_rock_depth=True, earthwork_cost_weight=1.0,
-                                   linear_cost_factor=1.0):
+                                   cost_array_with_rock_depth=True, earthwork_cost_weight=None,
+                                   linear_cost_factor=None):
     channel_capacity_m3_s = SECTIONS[section]['gross_diversions_m3_s']
 
     # 1 or 2 stop early; any larger value allows up to MAX_RUNS runs
