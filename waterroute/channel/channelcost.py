@@ -45,6 +45,8 @@ class Channel_Route:
     reaches:list  = field(default_factory=list)
     description: str = ''
     linear_cost_factor: float = 1.0
+    hydraulic_loss_factor: float = 1
+    cross_drainage_cost_factor: float = 1
     min_slope: float = 1/20000
     mannings_n: float = 0.0225
     path = None
