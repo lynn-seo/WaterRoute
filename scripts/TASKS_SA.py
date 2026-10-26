@@ -68,6 +68,7 @@ SIDE_SLOPES = (1.5, 2.0, 2.5)
 LINEAR_COST_FACTORS = (0.7, 1, 1.3)
 EARTHWORK_COST_WEIGHTS = (0.7, 1, 1.3)
 CROSS_DRAINAGE_COST_FACTORS = (0.5, 1, 1.5)
+HYDRAULIC_LOSS_FACTORS = (0.5, 1, 1.5)
 MANNING_N_VALUES = (0.022, 0.031, 0.036)
 DISCOUNT_RATES = (0.030, 0.070, 0.100)
 RATIOS = (5,)
@@ -125,6 +126,11 @@ TASKS = (
         for manning_n in MANNING_N_VALUES
         for velocity in VELOCITIES
     ]
+    + [
+        ("HL-", velocity, "hydraulic_loss_factor", factor)
+        for factor in HYDRAULIC_LOSS_FACTORS
+        for velocity in VELOCITIES
+    ]
 )
 
 TASK_GROUPS = {
@@ -134,6 +140,7 @@ TASK_GROUPS = {
     "CD": "CD-",
     "MN": "MN-",
     "DR": "DR",
+    "HL": "HL-",
 }
 
 
@@ -163,6 +170,7 @@ def main(task_index, task_group):
         value if parameter == "cross_drainage_cost_factor" else 1
     )
     linear_cost_factor = value if parameter == "linear_cost_factor" else 1
+    hydraulic_loss_factor = value if parameter == "hydraulic_loss_factor" else 1
     discount_rate = value if parameter == "discount_rate" else default_DISCOUNT_RATE
     task_routes_dir = ROUTES_DIR / task_group
     task_routes_dir.mkdir(parents=True, exist_ok=True)
@@ -179,6 +187,7 @@ def main(task_index, task_group):
         MAX_RUNS=MAX_RUNS,
         RESIDUAL_HEAD_LOSS_TOL_M=RESIDUAL_HEAD_LOSS_TOL_M,
         CROSS_DRAINAGE_COST_FACTOR=cross_drainage_cost_factor,
+        HYDRAULIC_LOSS_FACTOR=hydraulic_loss_factor,
         LINEAR_COST_FACTOR=linear_cost_factor,
         DISCOUNT_RATE=discount_rate,
         SECTIONS=SECTIONS,
@@ -209,6 +218,8 @@ def main(task_index, task_group):
             suffix = f"-CD{float(round(value, 3))}"
         elif parameter == "manning_n":
             suffix = f"-ME{float(round(value, 3))}"
+        elif parameter == "hydraulic_loss_factor":
+            suffix = f"-HL{float(round(value, 3))}"
         else:
             suffix = f"-DR{value:.3f}"
         run_name = (

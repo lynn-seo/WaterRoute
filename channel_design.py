@@ -51,7 +51,8 @@ SETTINGS = (
     'ROUTES_DIR', 'SEQUENTIAL_RUN_TEMPLATE', 'DEM_PATH', 'ROCK_DEPTH_PATH', 'ROUTING_BOUNDS',
     'MANNING_N', 'SIDE_SLOPE', 'SAMPLE_F', 'MAX_FILL_SIPHON_ENDS',
     'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_FACTOR',
-    'EARTHWORK_COST_FACTOR', 'LINEAR_COST_FACTOR', 'DISCOUNT_RATE', 'SECTIONS',
+    'EARTHWORK_COST_FACTOR', 'HYDRAULIC_LOSS_FACTOR', 'LINEAR_COST_FACTOR',
+    'DISCOUNT_RATE', 'SECTIONS',
 )
 ROUTES_DIR = SEQUENTIAL_RUN_TEMPLATE = DEM_PATH = ROCK_DEPTH_PATH = ROUTING_BOUNDS = None
 MANNING_N = SIDE_SLOPE = SAMPLE_F = MAX_FILL_SIPHON_ENDS = None
@@ -59,7 +60,7 @@ MAX_RUNS = RESIDUAL_HEAD_LOSS_TOL_M = CROSS_DRAINAGE_COST_FACTOR = SECTIONS = No
 EARTHWORK_COST_FACTOR = 1.0
 LINEAR_COST_FACTOR = 1.0
 DISCOUNT_RATE = 0.07
-
+HYDRAULIC_LOSS_FACTOR = 1.0
 
 def configure(**settings):
     """Set the module settings listed in SETTINGS, e.g. configure(MANNING_N=0.03, ...)."""
@@ -331,6 +332,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
 
     # Cost model
     CR.cross_drainage_cost_factor = CROSS_DRAINAGE_COST_FACTOR
+    CR.hydraulic_loss_factor = HYDRAULIC_LOSS_FACTOR
     CR.lifetime = 50
     CR.discount_rate = DISCOUNT_RATE
     CR.rockDepth = 5  # no longer used; kept in case channelcost still reads it

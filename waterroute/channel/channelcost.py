@@ -265,6 +265,8 @@ def costs_calc(CR):
                 df.columns = ['siphon_control_structure_cost']
         
         CR.profile =  CR.profile.merge(df,left_index=True, right_index=True,how='left')
+        CR.profile['siphon_cost'] = CR.profile['siphon_cost']*CR.cross_drainage_cost_factor
+        CR.profile['cross_drain_cost'] = CR.profile['cross_drain_cost'] * CR.cross_drainage_cost_factor
         
         _net_siphon_cost = CR.profile['siphon_cost'] - CR.profile['siphon_earthworks_cost_saving'] + CR.profile['siphon_control_structure_cost']
         # siphon_cost already considered siphon structure cost
@@ -445,6 +447,7 @@ def costs_calc(CR):
     
 
     CR.total_controlled_head_loss_m = CR.siphon_head_loss_m + CR.control_head_loss_m + CR.crossing_head_loss_m + CR.siphon_inlet_outlet_loss_m
+    CR.total_controlled_head_loss_m = CR.total_controlled_head_loss_m * CR.hydraulic_loss_factor
     CR.adjusted_final_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1]+CR.total_controlled_head_loss_m - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])
     _, V, A = channelroute.trapezoidal_discharge(width=CR.water_surface_width, depth=CR.routing_water_depth, S=abs(CR.adjusted_final_slope), n=0.03, z=2)
     CR.channel_velocity_m_per_s = V
