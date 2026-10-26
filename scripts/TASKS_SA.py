@@ -59,7 +59,7 @@ class VELOCITIES(tuple):
 
 
 #16 velocities
-VELOCITIES = VELOCITIES(0.421, 0.451, 0.002)
+VELOCITIES = VELOCITIES(0.301, 0.601, 0.002)
 default_SIDE_SLOPE = 2
 default_MANNING_N = 0.03
 default_DISCOUNT_RATE = 0.07
@@ -121,7 +121,7 @@ TASKS = (
         for velocity in VELOCITIES
     ]
     + [
-        ("MN-SA", velocity, "manning_n", manning_n)
+        ("MN-", velocity, "manning_n", manning_n)
         for manning_n in MANNING_N_VALUES
         for velocity in VELOCITIES
     ]
@@ -132,7 +132,7 @@ TASK_GROUPS = {
     "EW": "EW",
     "SS": "SS-",
     "CD": "CD-",
-    "MN": "MN-SA",
+    "MN": "MN-",
     "DR": "DR",
 }
 
