@@ -437,11 +437,8 @@ def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, 
             section=section, ratio_width_depth=width_to_depth_ratio, run_name=run_name,
             target_slope=slope_for_channel_dimension, bed_width=width, water_depth=depth,
             linear_cost=linear_cost, 
-            is_length_penalty=is_length_penalty, cost_array_with_rock_depth=cost_array_with_rock_depth,
-            earthwork_cost_weight=earthwork_cost_weight,
-            linear_cost_factor=linear_cost_factor,
-            loss_factor=  loss_factor
-        )
+            is_length_penalty=is_length_penalty, cost_array_with_rock_depth=cost_array_with_rock_depth
+                    )
 
         # Collect results
         cost_file = f'{output_path}_costs.csv'
