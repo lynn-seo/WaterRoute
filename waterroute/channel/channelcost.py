@@ -45,6 +45,7 @@ class Channel_Route:
     reaches:list  = field(default_factory=list)
     description: str = ''
     linear_cost_factor: float = 1.0
+    loss_factor: float = 1.0
     hydraulic_loss_factor: float = 1
     cross_drainage_cost_factor: float = 1
     mannings_n: float = 0.0225
@@ -332,7 +333,7 @@ def costs_calc(CR):
                          CR.farm_crossing_costs,
                          CR.easement_linear_costs,
                          CR.catch_drainage_costs,
-                         CR.SCADA_network_cost])
+                         CR.SCADA_network_cost])*CR.linear_cost_factor
     
     #within_channel_infrastructure_cost
     # CR.semi_linear_cost = sum([CR.control_structure_cost,
@@ -441,7 +442,7 @@ def costs_calc(CR):
                         lossEachStockDomestic = 2, spacingStockDomestic = 2, leakageRate = 0, channelXSection = CR.water_section_area, 
                         rolling_shutdown_factor = CR.rolling_shutdown_factor, waterDepth=CR.routing_water_depth)
     
-    CR.total_loss_GL_v2 = _total_loss_v2['Total']/1000
+    CR.total_loss_GL_v2 = _total_loss_v2['Total']/1000*CR.loss_factor
     CR.total_elevation_change_m = CR.profile['flow_level_elevation(m)'].iloc[0] - CR.profile['flow_level_elevation(m)'].iloc[-1]
     CR.total_length_m = CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0]
     CR.final_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1] - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])

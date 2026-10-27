@@ -66,6 +66,7 @@ default_DISCOUNT_RATE = 0.07
 
 SIDE_SLOPES = (1.5, 2.0, 2.5)
 LINEAR_COST_FACTORS = (0.7, 1, 1.3)
+LOSS_FACTORS = (0.5, 1, 1.5)
 EARTHWORK_COST_WEIGHTS = (0.7, 1, 1.3)
 CROSS_DRAINAGE_COST_FACTORS = (0.5, 1, 1.5)
 HYDRAULIC_LOSS_FACTORS = (0.5, 1, 1.5)
@@ -131,6 +132,11 @@ TASKS = (
         for factor in HYDRAULIC_LOSS_FACTORS
         for velocity in VELOCITIES
     ]
+    + [
+        ("LF-", velocity, "loss_factor", factor)
+        for factor in LOSS_FACTORS
+        for velocity in VELOCITIES
+    ]
 )
 
 TASK_GROUPS = {
@@ -141,6 +147,7 @@ TASK_GROUPS = {
     "MN": "MN-",
     "DR": "DR",
     "HL": "HL-",
+    "LF": "LF-",
 }
 
 
@@ -220,6 +227,8 @@ def main(task_index, task_group):
             suffix = f"-ME{float(round(value, 3))}"
         elif parameter == "hydraulic_loss_factor":
             suffix = f"-HL{float(round(value, 3))}"
+        elif parameter == "loss_factor":
+            suffix = f"-LF{float(round(value, 3))}"
         else:
             suffix = f"-DR{value:.3f}"
         run_name = (
@@ -258,7 +267,7 @@ if __name__ == "__main__":
         "--parameter",
         required=True,
         choices=TASK_GROUPS,
-        help="Task group to run (LC, EW, SS, CD, MN, or DR).",
+        help="Task group to run (LC, EW, SS, CD, MN, LF, or DR).",
     )
     args = parser.parse_args()
     if args.task_index is None:

@@ -61,6 +61,7 @@ EARTHWORK_COST_FACTOR = 1.0
 LINEAR_COST_FACTOR = 1.0
 DISCOUNT_RATE = 0.07
 HYDRAULIC_LOSS_FACTOR = 1.0
+LOSS_FACTOR = 1.0
 
 def configure(**settings):
     """Set the module settings listed in SETTINGS, e.g. configure(MANNING_N=0.03, ...)."""
@@ -277,6 +278,7 @@ def runner(CR, dem_ratio=1, dem=None, aff=None, crs=None):
         discount_rate=CR.discount_rate,
         lifespan=CR.lifetime,
         linear_cost_factor=CR.linear_cost_factor,
+        loss_factor=CR.loss_factor,
         # cross_drainage_cost_factor=CR.cross_drainage_cost_factor,
         # hydraulic_loss_factor=CR.hydraulic_loss_factor,
     )
@@ -371,6 +373,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     # Cost model
     CR.cross_drainage_cost_factor = CROSS_DRAINAGE_COST_FACTOR
     CR.hydraulic_loss_factor = HYDRAULIC_LOSS_FACTOR
+    CR.loss_factor = LOSS_FACTOR
     CR.lifetime = 50
     CR.discount_rate = DISCOUNT_RATE
     CR.rockDepth = 5  # no longer used; kept in case channelcost still reads it
