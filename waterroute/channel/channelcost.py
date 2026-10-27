@@ -296,12 +296,12 @@ def costs_calc(CR):
     siphon_rows = CR.profile[CR.profile['use_siphon']]
     df_siphonLosses = pd.DataFrame(index=siphon_rows.index, columns=['siphon_head_loss_single'], dtype=float)
     if not siphon_rows.empty:
-        df_siphonLosses['siphon_head_loss_single'] = siphon_rows.apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss(x['length_of_siphon(m)'], CR.manning_n, x['siphon_velocity'], x['siphon_pipe_D']),axis='columns')
+        df_siphonLosses['siphon_head_loss_single'] = siphon_rows.apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss(x['length_of_siphon(m)'], CR.mannings_n, x['siphon_velocity'], x['siphon_pipe_D']),axis='columns')
     CR.profile =  CR.profile.merge(df_siphonLosses,left_index=True, right_index=True,how='left')
     
     df_siphonLosses_v2 = pd.DataFrame(index=siphon_rows.index, columns=['siphon_head_loss_allBarrels'], dtype=float)
     if not siphon_rows.empty:
-        df_siphonLosses_v2['siphon_head_loss_allBarrels'] = siphon_rows.apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss_v2(x['length_of_siphon(m)'], CR.manning_n, x['capacity_m3_per_s'], x['siphon_pipe_D'], x['siphon_number_of_barrels']),axis='columns')
+        df_siphonLosses_v2['siphon_head_loss_allBarrels'] = siphon_rows.apply(lambda x: inlineAndSiphonControlStructures.siphon_headLoss_v2(x['length_of_siphon(m)'], CR.mannings_n, x['capacity_m3_per_s'], x['siphon_pipe_D'], x['siphon_number_of_barrels']),axis='columns')
     CR.profile =  CR.profile.merge(df_siphonLosses_v2,left_index=True, right_index=True,how='left')
 
     df_siphon_inletOutlet_Losses = pd.DataFrame(index=siphon_rows.index, columns=['siphon_inletOutlet_loss'], dtype=float)
@@ -453,7 +453,7 @@ def costs_calc(CR):
     CR.total_controlled_head_loss_m = CR.siphon_head_loss_m + CR.control_head_loss_m + CR.crossing_head_loss_m + CR.siphon_inlet_outlet_loss_m
     CR.total_controlled_head_loss_m = CR.total_controlled_head_loss_m * CR.hydraulic_loss_factor
     CR.adjusted_final_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1]+CR.total_controlled_head_loss_m - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])
-    _, V, A = channelroute.trapezoidal_discharge(width=CR.water_surface_width, depth=CR.routing_water_depth, S=abs(CR.adjusted_final_slope), n=CR.manning_n, z=CR.side_slope)
+    _, V, A = channelroute.trapezoidal_discharge(width=CR.water_surface_width, depth=CR.routing_water_depth, S=abs(CR.adjusted_final_slope), n=CR.mannings_n, z=CR.side_slope)
     CR.channel_velocity_m_per_s = V
     # CR.total_annual_loss_GL = CR.total_annual_loss['Total']/1E3
     CR.GL_delivered_per_year = CR.gross_diversions_annual_m3_per_s * 86400 / 1E6 *120 - CR.total_loss_GL_v2
