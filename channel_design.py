@@ -51,7 +51,7 @@ SETTINGS = (
     'ROUTES_DIR', 'SEQUENTIAL_RUN_TEMPLATE', 'DEM_PATH', 'ROCK_DEPTH_PATH', 'ROUTING_BOUNDS',
     'MANNING_N', 'SIDE_SLOPE', 'SAMPLE_F', 'MAX_FILL_SIPHON_ENDS',
     'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_FACTOR',
-    'EARTHWORK_COST_FACTOR', 'HYDRAULIC_LOSS_FACTOR', 'LINEAR_COST_FACTOR',
+    'EARTHWORK_COST_FACTOR', 'HYDRAULIC_LOSS_FACTOR', 'LINEAR_COST_FACTOR','LOSS_FACTOR',
     'DISCOUNT_RATE', 'SECTIONS',
 )
 ROUTES_DIR = SEQUENTIAL_RUN_TEMPLATE = DEM_PATH = ROCK_DEPTH_PATH = ROUTING_BOUNDS = None
@@ -163,12 +163,12 @@ def trapezoidal_discharge(width, depth, n=None, S=None, z=None):
     return Q, V, A
 
 
-def solve_depth_ratio(Q, S, n, ratio):
+def solve_depth_ratio(Q, S, n, ratio, z=2):
     """Water depth (m) that carries Q at slope S when bed width = ratio * depth."""
     S = abs(S)
 
     def residual(depth):
-        Q_calc, _, _ = trapezoidal_discharge(width=ratio * depth, depth=depth, S=S, n=n)
+        Q_calc, _, _ = trapezoidal_discharge(width=ratio * depth, depth=depth, S=S, n=n, z=z)
         return Q_calc - Q
 
     return root_scalar(residual, bracket=[0.1, 10], method='brentq').root
@@ -311,8 +311,9 @@ def runner(CR, dem_ratio=1, dem=None, aff=None, crs=None):
 def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_slope=None,
                 bed_width=None, water_depth=None, linear_cost=None,
                 loss_value_dollar_per_ML=75, is_length_penalty=True,
-                cost_array_with_rock_depth=True, sunWater_route=False, earthwork_cost_weight=None,
-                linear_cost_factor=None):
+                cost_array_with_rock_depth=True, sunWater_route=False, 
+                # earthwork_cost_weight=None, linear_cost_factor=None, loss_factor=None
+                ):
     """Configure a Channel_Route for the given section and run it."""
     if section not in SECTIONS:
         raise ValueError(f"Unknown section {section!r}; expected one of {list(SECTIONS)}")
@@ -330,9 +331,8 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.routing_finish = cfg['finish']
     CR.routing_start_elevation = cfg['start_elevation']
     CR.gross_diversions_annual_m3_per_s = cfg['gross_diversions_m3_s']
-    CR.linear_cost_factor = (
-        LINEAR_COST_FACTOR if linear_cost_factor is None else linear_cost_factor
-    )
+    CR.linear_cost_factor = LINEAR_COST_FACTOR 
+    
     base_linear_cost = cfg['default_linear_cost'] if linear_cost is None else linear_cost
     CR.total_linear_cost = base_linear_cost * CR.linear_cost_factor
     # print(f"Linear cost: {base_linear_cost} x {CR.linear_cost_factor} = {CR.total_linear_cost}")
@@ -344,11 +344,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.cost_array_with_rock_depth = cost_array_with_rock_depth
     CR.withLengthPenalty = is_length_penalty
     CR.sunWater_route = sunWater_route
-    CR.earthwork_cost_weight = (
-        EARTHWORK_COST_FACTOR
-        if earthwork_cost_weight is None
-        else earthwork_cost_weight
-    )
+    CR.earthwork_cost_weight = EARTHWORK_COST_FACTOR
     CR.side_slope = SIDE_SLOPE
     
 
@@ -408,7 +404,7 @@ def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, 
                                    run_name=None, section='section1', slope_for_channel_dimension=1/15000,
                                    linear_cost=None, loss_value_dollar_per_ML=75, is_length_penalty=True,
                                    cost_array_with_rock_depth=True, earthwork_cost_weight=None,
-                                   linear_cost_factor=None):
+                                   linear_cost_factor=None, loss_factor=None):
     channel_capacity_m3_s = SECTIONS[section]['gross_diversions_m3_s']
 
     # 1 or 2 stop early; any larger value allows up to MAX_RUNS runs
@@ -428,8 +424,8 @@ def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, 
             slope, depth, width = slope_for_channel_dimension, water_depth, bed_width
         else:
             slope = prev_adjusted_slope
-            print(MANNING_N, "delete")
-            depth = solve_depth_ratio(Q=channel_capacity_m3_s, S=slope, n=MANNING_N, ratio=width_to_depth_ratio)
+            # print(MANNING_N, "delete")
+            depth = solve_depth_ratio(Q=channel_capacity_m3_s, S=slope, n=MANNING_N, ratio=width_to_depth_ratio, z = SIDE_SLOPE)
             width = width_to_depth_ratio * depth
         seq_df.loc[row, 'width_to_depth_ratio'] = width_to_depth_ratio
         seq_df.loc[row, 'slope'] = slope
@@ -444,7 +440,7 @@ def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, 
             is_length_penalty=is_length_penalty, cost_array_with_rock_depth=cost_array_with_rock_depth,
             earthwork_cost_weight=earthwork_cost_weight,
             linear_cost_factor=linear_cost_factor,
-            
+            loss_factor=  loss_factor
         )
 
         # Collect results

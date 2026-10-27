@@ -178,6 +178,8 @@ def main(task_index, task_group):
     )
     linear_cost_factor = value if parameter == "linear_cost_factor" else 1
     hydraulic_loss_factor = value if parameter == "hydraulic_loss_factor" else 1
+    loss_factor = value if parameter == "loss_factor" else 1
+    earthwork_cost_weight = value if parameter == "earthwork_cost_weight" else 1
     discount_rate = value if parameter == "discount_rate" else default_DISCOUNT_RATE
     task_routes_dir = ROUTES_DIR / task_group
     task_routes_dir.mkdir(parents=True, exist_ok=True)
@@ -196,6 +198,8 @@ def main(task_index, task_group):
         CROSS_DRAINAGE_COST_FACTOR=cross_drainage_cost_factor,
         HYDRAULIC_LOSS_FACTOR=hydraulic_loss_factor,
         LINEAR_COST_FACTOR=linear_cost_factor,
+        LOSS_FACTOR=loss_factor,
+        EARTHWORK_COST_FACTOR=earthwork_cost_weight,
         DISCOUNT_RATE=discount_rate,
         SECTIONS=SECTIONS,
     )

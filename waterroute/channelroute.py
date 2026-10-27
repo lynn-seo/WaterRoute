@@ -549,7 +549,7 @@ def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width
     #      pickle.dump(earthWorkCost_curve, f)
     # with open('realDEM.pkl', 'wb') as f:
     #      pickle.dump(relDEM, f)
-    print(f"Earthwork cost weight: {earthwork_cost_weight}")
+    # print(f"Earthwork cost weight: {earthwork_cost_weight}")
 
     return specific_cost_array2*earthwork_cost_weight
 
