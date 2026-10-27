@@ -133,7 +133,7 @@ def output_location(run_name):
 
 
 # ---- Channel hydraulics (Manning, trapezoidal section) ----
-def trapezoidal_discharge(width, depth, S, n=None, z=None):
+def trapezoidal_discharge(width, depth, n=None, S=None, z=None):
     """
     Discharge for a trapezoidal channel using Manning's equation.
 
@@ -152,6 +152,7 @@ def trapezoidal_discharge(width, depth, S, n=None, z=None):
     A : cross-sectional area (m2)
     """
     n = MANNING_N if n is None else n
+    S = 1/15000 if S is None else S
     z = SIDE_SLOPE if z is None else z
     A = depth * (width + z * depth)            # cross-sectional area
     P = width + 2 * depth * np.sqrt(1 + z**2)  # wetted perimeter
@@ -172,15 +173,51 @@ def solve_depth_ratio(Q, S, n, ratio):
     return root_scalar(residual, bracket=[0.1, 10], method='brentq').root
 
 
+
+import numpy as np
+
 def solve_S(Q, V, z=None, n=None, ratio=5):
-    """Slope, depth and bed width that carry Q at velocity V. Returns (S, depth, width)."""
+    """Calculate the uniform-flow slope and trapezoidal channel dimensions.
+
+    Parameters
+    ----------
+    Q : float
+        Design discharge (m³/s).
+    V : float
+        Target mean flow velocity (m/s).
+    z : float, optional
+        Side slope, horizontal-to-vertical. Defaults to SIDE_SLOPE.
+    n : float, optional
+        Manning roughness coefficient. Defaults to MANNING_N.
+    ratio : float, optional
+        Bed-width-to-water-depth ratio. Defaults to 5.
+
+    Returns
+    -------
+    tuple
+        (S, depth, bed_width), with slope in m/m and dimensions in m.
+    """
     n = MANNING_N if n is None else n
     z = SIDE_SLOPE if z is None else z
-    d =np.sqrt(Q / (V * (ratio + z)))
-    _, _, A = trapezoidal_discharge(width=ratio * d, depth=d, S=1, n=n, z=z)
-    R = A / (ratio * d + 2 * d * np.sqrt(1 + z**2))
-    S = (V * n / R ** (2 / 3)) ** 2
-    return round(S, 7), round(d, 2), round(ratio * d, 2)
+
+    if Q <= 0 or V <= 0 or n <= 0 or z < 0 or ratio <= 0:
+        raise ValueError(
+            "Q, V, n and ratio must be positive; z must be non-negative."
+        )
+
+    # Channel geometry from Q = V * A
+    d = np.sqrt(Q / (V * (ratio + z)))
+    b = ratio * d
+
+    # Trapezoidal cross-section
+    A = d * (b + z * d)
+    P = b + 2 * d * np.sqrt(1 + z**2)
+    R = A / P
+
+    # Manning equation
+    S = (V * n / R**(2 / 3))**2
+
+    return S, d, b, A, P, R
 
 
 def annualised_cost(cost, discount_rate=0.07, lifespan=50, om_fraction=0.02):
@@ -311,6 +348,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
         else earthwork_cost_weight
     )
     CR.side_slope = SIDE_SLOPE
+    
 
     # Channel dimensions
     CR.mannings_n = MANNING_N

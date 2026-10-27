@@ -47,8 +47,10 @@ class Channel_Route:
     linear_cost_factor: float = 1.0
     hydraulic_loss_factor: float = 1
     cross_drainage_cost_factor: float = 1
-    min_slope: float = 1/20000
     mannings_n: float = 0.0225
+
+    min_slope: float = 1/20000
+    
     path = None
     profile = None
     lined = True
