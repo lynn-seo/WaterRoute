@@ -218,7 +218,7 @@ def solve_S(Q, V, z=None, n=None, ratio=5):
     # Manning equation
     S = (V * n / R**(2 / 3))**2
 
-    return S, d, b, A, P, R
+    return S, d, b
 
 
 def annualised_cost(cost, discount_rate=0.07, lifespan=50, om_fraction=0.02):
