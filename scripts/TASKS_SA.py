@@ -59,7 +59,7 @@ class VELOCITIES(tuple):
 
 
 #16 velocities
-VELOCITIES = VELOCITIES(0.301, 0.601, 0.002)
+VELOCITIES = VELOCITIES(0.501, 0.701, 0.002)
 default_SIDE_SLOPE = 2
 default_MANNING_N = 0.03
 default_DISCOUNT_RATE = 0.07
@@ -70,8 +70,9 @@ LOSS_FACTORS = (0.5, 1, 1.5)
 EARTHWORK_COST_WEIGHTS = (0.7, 1, 1.3)
 CROSS_DRAINAGE_COST_FACTORS = (0.5, 1, 1.5)
 HYDRAULIC_LOSS_FACTORS = (0.5, 1, 1.5)
-MANNING_N_VALUES = (0.022, 0.031, 0.036)
+MANNING_N_VALUES = (0.025, 0.031, 0.037)
 DISCOUNT_RATES = (0.030, 0.070, 0.100)
+FREEBOARD_FACTOR = (0.7, 1, 1.3)
 RATIOS = (5,)
 
 MAX_RUNS = 5
@@ -136,7 +137,12 @@ TASKS = (
         ("LF-", velocity, "loss_factor", factor)
         for factor in LOSS_FACTORS
         for velocity in VELOCITIES
-    ]
+    ]+
+    [
+            ("FB-", velocity, "freeboard_factor", factor)
+            for factor in LOSS_FACTORS
+            for velocity in VELOCITIES
+        ]
 )
 
 TASK_GROUPS = {
@@ -148,6 +154,7 @@ TASK_GROUPS = {
     "DR": "DR",
     "HL": "HL-",
     "LF": "LF-",
+    'FB':'FB',
 }
 
 
@@ -181,6 +188,7 @@ def main(task_index, task_group):
     loss_factor = value if parameter == "loss_factor" else 1
     earthwork_cost_weight = value if parameter == "earthwork_cost_weight" else 1
     discount_rate = value if parameter == "discount_rate" else default_DISCOUNT_RATE
+    freeboard_factor = value if parameter=='freeboard_factor' else 1
     task_routes_dir = ROUTES_DIR / task_group
     task_routes_dir.mkdir(parents=True, exist_ok=True)
     channel_design.configure(
@@ -200,6 +208,7 @@ def main(task_index, task_group):
         LINEAR_COST_FACTOR=linear_cost_factor,
         LOSS_FACTOR=loss_factor,
         EARTHWORK_COST_FACTOR=earthwork_cost_weight,
+        FREEBOARD_FACTOR = freeboard_factor,
         DISCOUNT_RATE=discount_rate,
         SECTIONS=SECTIONS,
     )
@@ -218,11 +227,10 @@ def main(task_index, task_group):
     )
 
     for section, ratio, depth, width, slope_1_in_x, velocity in designs:
-        if parameter in ("linear_cost_factor", "earthwork_cost_weight"):
-            suffix = (
-                f"-{'c' if parameter == 'linear_cost_factor' else 'EW'}"
-                f"{float(round(value, 3))}"
-            )
+        if parameter in ("linear_cost_factor"):
+            suffix = f"-LC{float(round(value, 3))}"
+        elif parameter == "earthwork_cost_weight":
+            suffix = f"-EW{float(round(value, 3))}"
         elif parameter == "side_slope":
             suffix = f"-SS{float(round(value, 3))}"
         elif parameter == "cross_drainage_cost_factor":
@@ -233,8 +241,11 @@ def main(task_index, task_group):
             suffix = f"-HL{float(round(value, 3))}"
         elif parameter == "loss_factor":
             suffix = f"-LF{float(round(value, 3))}"
-        else:
+        elif parameter == "discount_rate":
             suffix = f"-DR{value:.3f}"
+        elif parameter == "freeboard_factor":
+            suffix = f"-FB{value:.3f}"
+
         run_name = (
             f"{version}-{section}-r{ratio}-d{depth}-w{width}"
             f"-S{slope_1_in_x}-v{velocity:.3f}{suffix}"

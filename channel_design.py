@@ -52,14 +52,18 @@ SETTINGS = (
     'MANNING_N', 'SIDE_SLOPE', 'SAMPLE_F', 'MAX_FILL_SIPHON_ENDS',
     'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_FACTOR',
     'EARTHWORK_COST_FACTOR', 'HYDRAULIC_LOSS_FACTOR', 'LINEAR_COST_FACTOR','LOSS_FACTOR',
+    'FREEBOARD_FACTOR',
     'DISCOUNT_RATE', 'SECTIONS',
 )
 ROUTES_DIR = SEQUENTIAL_RUN_TEMPLATE = DEM_PATH = ROCK_DEPTH_PATH = ROUTING_BOUNDS = None
-MANNING_N = SIDE_SLOPE = SAMPLE_F = MAX_FILL_SIPHON_ENDS = None
+SAMPLE_F = MAX_FILL_SIPHON_ENDS = None
 MAX_RUNS = RESIDUAL_HEAD_LOSS_TOL_M = CROSS_DRAINAGE_COST_FACTOR = SECTIONS = None
+SIDE_SLOPE = 2
+MANNING_N = 0.031
 EARTHWORK_COST_FACTOR = 1.0
 LINEAR_COST_FACTOR = 1.0
 DISCOUNT_RATE = 0.07
+FREEBOARD_FACTOR = 1.0
 HYDRAULIC_LOSS_FACTOR = 1.0
 LOSS_FACTOR = 1.0
 
@@ -171,7 +175,7 @@ def solve_depth_ratio(Q, S, n, ratio, z=2):
         Q_calc, _, _ = trapezoidal_discharge(width=ratio * depth, depth=depth, S=S, n=n, z=z)
         return Q_calc - Q
 
-    return root_scalar(residual, bracket=[0.1, 10], method='brentq').root
+    return root_scalar(residual, bracket=[1, 10], method='brentq').root
 
 
 
@@ -362,11 +366,12 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     # Routing options
     CR.routing_contour = 27
     CR.routing_doCrossDrainage = True
-    CR.routing_freeboard = 1
+    CR.routing_freeboard = 1 * FREEBOARD_FACTOR
     CR.routing_additional_per_m_cost = 2000
     CR.lined = False
 
     # Cost model
+    CR.freeboard_factor = FREEBOARD_FACTOR
     CR.cross_drainage_cost_factor = CROSS_DRAINAGE_COST_FACTOR
     CR.hydraulic_loss_factor = HYDRAULIC_LOSS_FACTOR
     CR.loss_factor = LOSS_FACTOR

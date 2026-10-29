@@ -113,7 +113,7 @@ def costs_calc(CR):
         
         #change above to refer the depth and width dected in channelroute.py, solver, def find_channel_dimension
 
-        reach.freeboard = CR.freeboard
+        reach.freeboard = CR.freeboard * CR.freeboard_factor
         if CR.freeboard is None:
             reach.freeboard = 0.2 * reach.water_depth + 0.3
 
@@ -458,6 +458,7 @@ def costs_calc(CR):
     # CR.total_annual_loss_GL = CR.total_annual_loss['Total']/1E3
     CR.GL_delivered_per_year = CR.gross_diversions_annual_m3_per_s * 86400 / 1E6 *120 - CR.total_loss_GL_v2
     CR.dollar_per_GL_delivered = (CR.total_cost/1E6) / (CR.GL_delivered_per_year)
+    
     annualised_capital_cost = -npf.pmt(CR.discount_rate, CR.lifetime, CR.total_cost)
     CR.annualised_cost_per_saleable_ML = (
         (annualised_capital_cost + CR.OandM_cost) / (CR.GL_delivered_per_year * 1000)
