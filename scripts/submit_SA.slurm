@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-TASK_PARAMETER="${1:?Submit with: sbatch submit_SA.slurm <LC|EW|SS|CD|MN|DR>}"
+TASK_PARAMETER="${1:?Submit with: sbatch submit_SA.slurm <LC|EW|SS|CD|MN|DR|HL|LF|FB>}"
 
 # SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_DIR="/scratch3/seo010/waterRoute/scripts"
