@@ -48,6 +48,7 @@ class Channel_Route:
     loss_factor: float = 1.0
     hydraulic_loss_factor: float = 1
     cross_drainage_cost_factor: float = 1
+    freeboard_factor: float = 1
     earthwork_cost_weight: float = 1
     mannings_n: float = 0.0225
 
