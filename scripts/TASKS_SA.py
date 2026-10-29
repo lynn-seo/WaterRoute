@@ -72,7 +72,7 @@ CROSS_DRAINAGE_COST_FACTORS = (0.5, 1, 1.5)
 HYDRAULIC_LOSS_FACTORS = (0.5, 1, 1.5)
 MANNING_N_VALUES = (0.025, 0.031, 0.037)
 DISCOUNT_RATES = (0.030, 0.070, 0.100)
-FREEBOARD_FACTOR = (0.7, 1, 1.3)
+FREEBOARD_FACTORs = (0.7, 1, 1.3)
 RATIOS = (5,)
 
 MAX_RUNS = 5
@@ -137,24 +137,24 @@ TASKS = (
         ("LF-", velocity, "loss_factor", factor)
         for factor in LOSS_FACTORS
         for velocity in VELOCITIES
-    ]+
-    [
-            ("FB-", velocity, "freeboard_factor", factor)
-            for factor in LOSS_FACTORS
-            for velocity in VELOCITIES
-        ]
+    ]
+    + [
+        ("FB-", velocity, "freeboard_factor", factor)
+        for factor in FREEBOARD_FACTORs
+        for velocity in VELOCITIES
+    ]
 )
 
 TASK_GROUPS = {
     "LC": "LC",
     "EW": "EW",
-    "SS": "SS-",
-    "CD": "CD-",
-    "MN": "MN-",
+    "SS": "SS",
+    "CD": "CD",
+    "MN": "MN",
     "DR": "DR",
-    "HL": "HL-",
-    "LF": "LF-",
-    'FB':'FB',
+    "HL": "HL",
+    "LF": "LF",
+    'FB': 'FB',
 }
 
 
