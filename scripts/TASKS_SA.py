@@ -114,32 +114,32 @@ TASKS = (
         for velocity in VELOCITIES
     ]
     + [
-        ("SS-", velocity, "side_slope", side_slope)
+        ("SS", velocity, "side_slope", side_slope)
         for side_slope in SIDE_SLOPES
         for velocity in VELOCITIES
     ]
     + [
-        ("CD-", velocity, "cross_drainage_cost_factor", factor)
+        ("CD", velocity, "cross_drainage_cost_factor", factor)
         for factor in CROSS_DRAINAGE_COST_FACTORS
         for velocity in VELOCITIES
     ]
     + [
-        ("MN-", velocity, "manning_n", manning_n)
+        ("MN", velocity, "manning_n", manning_n)
         for manning_n in MANNING_N_VALUES
         for velocity in VELOCITIES
     ]
     + [
-        ("HL-", velocity, "hydraulic_loss_factor", factor)
+        ("HL", velocity, "hydraulic_loss_factor", factor)
         for factor in HYDRAULIC_LOSS_FACTORS
         for velocity in VELOCITIES
     ]
     + [
-        ("LF-", velocity, "loss_factor", factor)
+        ("LF", velocity, "loss_factor", factor)
         for factor in LOSS_FACTORS
         for velocity in VELOCITIES
     ]
     + [
-        ("FB-", velocity, "freeboard_factor", factor)
+        ("FB", velocity, "freeboard_factor", factor)
         for factor in FREEBOARD_FACTORs
         for velocity in VELOCITIES
     ]
