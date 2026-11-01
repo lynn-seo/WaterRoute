@@ -70,7 +70,7 @@ class Channel_Route:
     large_terminal_storage:bool = True # used to switch off some losses
     depth_scale:float = None
     max_water_depth:float  = 4.4
-    freeboard:float=None
+    freeboard:float = 1
     OandM_rate_per_km:float = 60000
     OandM_cost:float = 0
     construction_time_years:float = 0
