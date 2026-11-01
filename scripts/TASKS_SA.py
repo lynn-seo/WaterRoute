@@ -244,7 +244,7 @@ def main(task_index, task_group):
         elif parameter == "discount_rate":
             suffix = f"-DR{value:.3f}"
         elif parameter == "freeboard_factor":
-            suffix = f"-FB{value:.3f}"
+            suffix = f"-FB{float(round(value, 3))}"
 
         run_name = (
             f"{version}-{section}-r{ratio}-d{depth}-w{width}"
