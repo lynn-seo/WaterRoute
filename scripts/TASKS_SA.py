@@ -58,7 +58,7 @@ class VELOCITIES(tuple):
         return f"{self.__class__.__name__}({list(self)!r})"
 
 
-#16 velocities
+#100 velocities
 VELOCITIES = VELOCITIES(0.501, 0.701, 0.002)
 default_SIDE_SLOPE = 2
 default_MANNING_N = 0.03
