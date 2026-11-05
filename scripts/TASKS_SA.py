@@ -14,7 +14,7 @@ import channel_design
 from channel_design import candidate_designs, route_with_head_loss_iteration
 
 
-PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel/run5"
+PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel/run6"
 ROUTES_DIR = Path(
     os.environ.get("WATERROUTE_ROUTES_DIR", PROJECT_ROOT)
 ).expanduser().resolve()
@@ -248,7 +248,7 @@ def main(task_index, task_group):
             suffix = f"-FB{float(round(value, 3))}"
 
         run_name = (
-            f"{version}-{section}-r{ratio}-d{depth}-w{width}"
+            f"{version}-{section}-r{ratio}-d{depth:.2f}-w{width:.2f}"
             f"-S{slope_1_in_x}-v{velocity:.3f}{suffix}"
         )
         existing_run_dir = task_routes_dir / run_name

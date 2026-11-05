@@ -50,7 +50,7 @@ class Channel_Route:
     cross_drainage_cost_factor: float = 1
     freeboard_factor: float = 1
     earthwork_cost_weight: float = 1
-    mannings_n: float = 0.0225
+    mannings_n: float = 0.031
 
     min_slope: float = 1/20000
     
@@ -460,8 +460,8 @@ def costs_calc(CR):
     CR.GL_delivered_per_year = CR.gross_diversions_annual_m3_per_s * 86400 / 1E6 *120 - CR.total_loss_GL_v2
     CR.dollar_per_GL_delivered = (CR.total_cost/1E6) / (CR.GL_delivered_per_year)
     
-    annualised_capital_cost = -npf.pmt(CR.discount_rate, CR.lifetime, CR.total_cost)
-    CR.annualised_cost_per_saleable_ML = (
-        (annualised_capital_cost + CR.OandM_cost) / (CR.GL_delivered_per_year * 1000)
-    )
+    # annualised_capital_cost = -npf.pmt(CR.discount_rate, CR.lifetime, CR.total_cost)
+    # CR.annualised_cost_per_saleable_ML = (
+    #     (annualised_capital_cost + CR.OandM_cost) / (CR.GL_delivered_per_year * 1000)
+    # )
     
