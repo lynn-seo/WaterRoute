@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --array=0-449%16
+#SBATCH --array=0-2%16
 #SBATCH --account=OD-239352
 
 set -euo pipefail
@@ -13,12 +13,12 @@ set -euo pipefail
 TASK_PARAMETER="${1:?Submit with: sbatch submit_SA.slurm <LC|EW|SS|CD|MN|DR>}"
 
 # SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT_DIR="/scratch3/seo010/waterRoute/scripts"
-REPO_ROOT="/scratch3/seo010/waterRoute"
+SCRIPT_DIR="/scratch3/seo010/WaterRoute/scripts"
+REPO_ROOT="/scratch3/seo010/WaterRoute"
 
 # Each array task gets its own working directory
 TASK_TMP_ROOT="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}"
-TASK_WORK_DIR="${TASK_TMP_ROOT}/waterroute-${SLURM_JOB_ID}-${SLURM_ARRAY_TASK_ID}"
+TASK_WORK_DIR="${TASK_TMP_ROOT}/WaterRoute-${SLURM_JOB_ID}-${SLURM_ARRAY_TASK_ID}"
 mkdir -p "${TASK_WORK_DIR}"
 cd "${TASK_WORK_DIR}"
 
