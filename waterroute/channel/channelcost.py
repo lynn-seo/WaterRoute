@@ -114,7 +114,7 @@ def costs_calc(CR):
         
         #change above to refer the depth and width dected in channelroute.py, solver, def find_channel_dimension
 
-        reach.freeboard = CR.freeboard * CR.freeboard_factor
+        reach.freeboard = CR.freeboard 
         if CR.freeboard is None:
             reach.freeboard = 0.2 * reach.water_depth + 0.3
 
