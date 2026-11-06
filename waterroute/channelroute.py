@@ -181,8 +181,8 @@ def route_through_array_length_penalty(array, start, end,
     # length_penalty = 0
     # length_penalty = annualised_cost(577045/1000)
     
-    if lenghth_penalty_per_km is None:
-        lenghth_penalty_per_km = 0
+    # if lenghth_penalty_per_km is None:
+    #     lenghth_penalty_per_km = 0
 
     # print(f'length_penalty ($/cell)= {length_penalty}')
     # print(f'length_penalty ($/m)= {lenghth_penalty_per_km/1000}')
