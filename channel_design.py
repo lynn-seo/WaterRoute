@@ -175,7 +175,7 @@ def solve_depth_ratio(Q, S, n, ratio, z=2):
         Q_calc, _, _ = trapezoidal_discharge(width=ratio * depth, depth=depth, S=S, n=n, z=z)
         return Q_calc - Q
 
-    return root_scalar(residual, bracket=[1, 10], method='brentq').root
+    return root_scalar(residual, bracket=[0.1, 10], method='brentq').root
 
 
 
@@ -222,7 +222,7 @@ def solve_S(Q, V, z=None, n=None, ratio=5):
     # Manning equation
     S = (V * n / R**(2 / 3))**2
 
-    return S, d, b
+    return round(S, 7), round(d, 2), round(b, 2)
 
 
 def annualised_cost(cost, discount_rate=0.07, lifespan=50, om_fraction=0.02):
