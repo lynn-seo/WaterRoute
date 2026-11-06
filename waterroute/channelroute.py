@@ -498,7 +498,8 @@ def annualised_cost(cost, discount_rate = 0.07, lifespan= 50, QandM_percent=0.02
         return cost * (discount_rate * (1 + discount_rate) ** lifespan) / ((1 + discount_rate) ** lifespan - 1) + cost * QandM_percent
 
 
-def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width, water_depth, freeboard, additional_per_m_cost, rockDepth_raster,
+def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width, water_depth, freeboard, 
+                                           additional_per_m_cost, rockDepth_raster,
                                            earthwork_cost_weight, linear_cost_factor):
     '''applies a cost of fill/cut function to a surface 
     
@@ -989,7 +990,8 @@ def elevRangePaths(output_path,dem,aff,crs,fr,to,targetSlope,start,finish,max_fi
         
 def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_ends,target_elev,
              contour,doCrossDrainage,sampleF,bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
-             loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth, sunWater_route,earthwork_cost_weight,
+             loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth,
+               sunWater_route,earthwork_cost_weight,
                approximate_length, discount_rate=0.07, lifespan=50, linear_cost_factor=1, loss_factor=1):
     
     # startCell = (~aff * start)
@@ -1063,9 +1065,11 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     wetted_perimeter = properties_earthworks['Geometries']['wettedPerimeterSection'].length
     water_surface_width = properties_earthworks['Geometries']['waterSection'].bounds[2] - properties_earthworks['Geometries']['waterSection'].bounds[0]
 
-    annual_loss_ML_per_annum = Losses.getAnnualLossesLinear(annualDuration = 330, channelLength = 1, surfaceWidth = water_surface_width, evapPanAnnual = 2,
+    annual_loss_ML_per_annum = Losses.getAnnualLossesLinear(annualDuration = 330, channelLength = 1, 
+                                                            surfaceWidth = water_surface_width, evapPanAnnual = 2,
                         evapPeakDaily = 6, bedPerimeter = bed_width, k = 0.002, 
-                        lossEachStockDomestic = 2, spacingStockDomestic = 2, leakageRate = 0, channelXSection = water_section_area,rolling_shutdown_factor = 1, 
+                        lossEachStockDomestic = 2, spacingStockDomestic = 2, leakageRate = 0, 
+                        channelXSection = water_section_area,rolling_shutdown_factor = 1, 
                         waterDepth= water_depth)
     
     pd.Series(annual_loss_ML_per_annum, name='ML_per_annum').to_csv(
