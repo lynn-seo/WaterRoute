@@ -11,8 +11,8 @@
 set -euo pipefail
 
 # SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT_DIR="/scratch3/seo010/waterRoute/scripts"
-REPO_ROOT="/scratch3/seo010/waterRoute"
+SCRIPT_DIR="/scratch3/seo010/v2210/waterRoute/scripts"
+REPO_ROOT="/scratch3/seo010/v2210/waterRoute"
 
 # Each array task gets its own working directory
 TASK_TMP_ROOT="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}"
