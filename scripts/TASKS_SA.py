@@ -58,11 +58,12 @@ class VELOCITIES(tuple):
         return f"{self.__class__.__name__}({list(self)!r})"
 
 
+# VELOCITIES = VELOCITIES(0.421, 0.451, 0.002)
 VELOCITIES = (BASE_VELOCITY,)
 default_SIDE_SLOPE = 2
-default_MANNING_N = 0.031
+# default_MANNING_N = 0.031
+default_MANNING_N = 0.03
 default_DISCOUNT_RATE = 0.07
-BASE_FREEBOARD_M = 1.0
 
 EARTHWORK_COST_WEIGHTS = (0.7, 1, 1.3)
 LINEAR_COST_FACTORS = (0.7, 1, 1.3)
@@ -102,15 +103,16 @@ SECTIONS = {
 
 TASKS = (
     [
-        ("EW", velocity, "earthwork_cost_weight", factor)
-        for factor in EARTHWORK_COST_WEIGHTS
-        for velocity in VELOCITIES
-    ]
+            ("EW", velocity, "earthwork_cost_weight", factor)
+            for factor in EARTHWORK_COST_WEIGHTS
+            for velocity in VELOCITIES
+       ]
     + [
         ("LC", velocity, "linear_cost_factor", factor)
         for factor in LINEAR_COST_FACTORS
         for velocity in VELOCITIES
     ]
+    
     + [
         ("SS", velocity, "side_slope", side_slope)
         for side_slope in SIDE_SLOPES
@@ -122,7 +124,7 @@ TASKS = (
         for velocity in VELOCITIES
     ]
     + [
-        ("MN", velocity, "manning_n", manning_n)
+        ("MN", velocity, "manning_n", manning_n)#5
         for manning_n in MANNING_N_VALUES
         for velocity in VELOCITIES
     ]
@@ -155,9 +157,9 @@ TASK_GROUPS = {
     "CD": "CD",
     "MN": "MN",
     "DR": "DR",
-    "HL": "HL",
-    "LF": "LF",
-    "FB": "FB",
+    "HL": "HL", 
+    "LF": "LF", 
+    "FB": "FB" 
 }
 
 
@@ -182,15 +184,10 @@ def main(task_index, task_group):
         value if parameter == "cross_drainage_cost_factor" else 1
     )
     discount_rate = value if parameter == "discount_rate" else default_DISCOUNT_RATE
-    freeboard = (
-        BASE_FREEBOARD_M * value
-        if parameter == "freeboard_factor"
-        else BASE_FREEBOARD_M
-    )
-    task_routes_dir = ROUTES_DIR / version / f"{version}{value:g}"
-    task_routes_dir.mkdir(parents=True, exist_ok=True)
+    ROUTES_DIR.mkdir(parents=True, exist_ok=True)
+    #this defines modelling configurations
     channel_design.configure(
-        ROUTES_DIR=str(task_routes_dir),
+        ROUTES_DIR=str(ROUTES_DIR),
         SEQUENTIAL_RUN_TEMPLATE=str(SEQUENTIAL_RUN_TEMPLATE),
         DEM_PATH=str(DEM_PATH),
         ROCK_DEPTH_PATH=str(ROCK_DEPTH_PATH),
@@ -203,9 +200,9 @@ def main(task_index, task_group):
         RESIDUAL_HEAD_LOSS_TOL_M=RESIDUAL_HEAD_LOSS_TOL_M,
         CROSS_DRAINAGE_COST_FACTOR=cross_drainage_cost_factor,
         DISCOUNT_RATE=discount_rate,
-        FREEBOARD=freeboard,
         SECTIONS=SECTIONS,
     )
+    #this desides intiial channel dimension, slope, velocity
     designs = candidate_designs(
         SECTION,
         ratios=RATIOS,
@@ -220,38 +217,32 @@ def main(task_index, task_group):
     )
 
     for section, ratio, depth, width, slope_1_in_x, velocity in designs:
-        suffix_prefixes = {
-            "linear_cost_factor": "LC",
-            "earthwork_cost_weight": "EW",
-            "side_slope": "SS",
-            "cross_drainage_cost_factor": "CD",
-            "manning_n": "MN",
-            "discount_rate": "DR",
-            "hydraulic_loss_factor": "HL",
-            "loss_factor": "LF",
-            "freeboard_factor": "FB",
-        }
-        try:
-            suffix = f"-{suffix_prefixes[parameter]}{value:g}"
-        except KeyError as exc:
-            raise ValueError(f"Unsupported sensitivity parameter: {parameter}") from exc
+        if parameter in ("linear_cost_factor"):
+            suffix = f"-LC{float(round(value, 3))}"
+        elif parameter == "earthwork_cost_weight":
+            suffix = f"-EW{float(round(value, 3))}"
+        elif parameter == "side_slope":
+            suffix = f"-SS{float(round(value, 3))}"
+        elif parameter == "cross_drainage_cost_factor":
+            suffix = f"-CD{float(round(value, 3))}"
+        elif parameter == "manning_n":
+            suffix = f"-MN{float(round(value, 3))}"
+        elif parameter == "discount_rate":
+            suffix = f"-DR{float(round(value, 3))}"
+        elif parameter == "hydraulic_loss_factor":
+            suffix = f"-HL{float(round(value, 3))}"
+        elif parameter == "loss_factor":
+            suffix = f"-LF{float(round(value, 3))}"
+        elif parameter == "freeboard_factor":
+            suffix = f"-FB{float(round(value, 3))}"
+        
 
         run_name = (
             f"{version}-{section}-r{ratio}-d{depth}-w{width}"
             f"-S{slope_1_in_x}-v{velocity:.3f}{suffix}"
         )
-        existing_run_dir = next(
-            (
-                run_dir
-                for run_dir in (
-                    task_routes_dir / run_name,
-                    ROUTES_DIR / run_name,
-                )
-                if run_dir.exists()
-            ),
-            None,
-        )
-        if existing_run_dir is not None:
+        existing_run_dir = ROUTES_DIR / run_name
+        if existing_run_dir.exists():
             print(f"Exists, skipping: {existing_run_dir}", flush=True)
             continue
 
