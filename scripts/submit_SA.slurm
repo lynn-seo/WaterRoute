@@ -13,8 +13,8 @@ set -euo pipefail
 TASK_PARAMETER="${1:?Submit with: sbatch submit_SA.slurm <LC|EW|SS|CD|MN|DR>}"
 
 # SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT_DIR="/scratch3/seo010/waterRoute/scripts"
-REPO_ROOT="/scratch3/seo010/waterRoute"
+SCRIPT_DIR="/scratch3/seo010/v2310/WaterRoute/scripts"
+REPO_ROOT="/scratch3/seo010/v2310/WaterRoute"
 
 # Each array task gets its own working directory
 TASK_TMP_ROOT="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}"
