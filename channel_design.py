@@ -50,12 +50,14 @@ def _array_tile_init(self, in_array, in_affine, in_crs):
 SETTINGS = (
     'ROUTES_DIR', 'SEQUENTIAL_RUN_TEMPLATE', 'DEM_PATH', 'ROCK_DEPTH_PATH', 'ROUTING_BOUNDS',
     'MANNING_N', 'SIDE_SLOPE', 'SAMPLE_F', 'MAX_FILL_SIPHON_ENDS',
-    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_FACTOR', 'DISCOUNT_RATE', 'SECTIONS',
+    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_FACTOR', 'DISCOUNT_RATE',
+    'FREEBOARD', 'SECTIONS',
 )
 ROUTES_DIR = SEQUENTIAL_RUN_TEMPLATE = DEM_PATH = ROCK_DEPTH_PATH = ROUTING_BOUNDS = None
 MANNING_N = SIDE_SLOPE = SAMPLE_F = MAX_FILL_SIPHON_ENDS = None
 MAX_RUNS = RESIDUAL_HEAD_LOSS_TOL_M = CROSS_DRAINAGE_COST_FACTOR = SECTIONS = None
 DISCOUNT_RATE = 0.07
+FREEBOARD = 1.0
 
 
 def configure(**settings):
@@ -313,7 +315,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     # Routing options
     CR.routing_contour = 27
     CR.routing_doCrossDrainage = True
-    CR.routing_freeboard = 1
+    CR.routing_freeboard = FREEBOARD
     CR.routing_additional_per_m_cost = 2000
     CR.lined = False
 

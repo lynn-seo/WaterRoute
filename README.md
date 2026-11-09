@@ -73,8 +73,9 @@ Submit one section 2 sensitivity group at a time:
 sbatch scripts/submit_SA.slurm LC
 ```
 
-Replace `LC` with `EW`, `SS`, `CD`, `MN`, or `DR` to select the earthwork-cost,
-side-slope, cross-drainage-cost, Manning's n, or discount-rate group.
+Replace `LC` with `EW`, `SS`, `CD`, `MN`, `DR`, `HL`, `LF`, or `FB` to select
+another sensitivity group. `HL` and `LF` are currently dummy sweeps; `FB`
+scales the routing freeboard from its 1 m baseline.
 
 The SLURM script expects a Python environment with the packages in
 `waterroute/environment.yml`. Activate that environment in the script's
@@ -89,6 +90,8 @@ Each group currently has three tasks at velocity 0.437 m/s. The array runs up
 to three tasks concurrently; adjust the array range if the number of values in
 the selected group changes. Each task uses a separate temporary working
 directory to prevent collisions in intermediate files. The runner skips a
-scenario if its output directory already exists.
+scenario if its output directory already exists. Results are grouped under
+`<routes-dir>/<group>/<group><value>/<run-name>/<timestamp>/`, for example
+`run3/LC/LC0.7/LC-section2-.../YYYYMMDD_HHMMSS/`.
 
 The example run is given in `elliot_waterroute.ipynb`. 
