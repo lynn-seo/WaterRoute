@@ -65,13 +65,16 @@ for section, ratio, depth, width, slope_1_in_x, velocity in candidate_designs("s
     )
 ```
 
-### Linux SLURM linear-cost sensitivity run
+### Linux SLURM sensitivity runs
 
-The notebook's section 2 linear-cost sweep is available as a batch job:
+Submit one section 2 sensitivity group at a time:
 
 ```bash
-sbatch scripts/run_side_slope_SA.slurm
+sbatch scripts/submit_SA.slurm LC
 ```
+
+Replace `LC` with `EW`, `SS`, `CD`, `MN`, or `DR` to select the earthwork-cost,
+side-slope, cross-drainage-cost, Manning's n, or discount-rate group.
 
 The SLURM script expects a Python environment with the packages in
 `waterroute/environment.yml`. Activate that environment in the script's
@@ -82,13 +85,10 @@ The default inputs are resolved from this repository. Set
 to override their locations. Adjust the SLURM memory and time requests for
 your cluster's limits.
 
-The SLURM array runs the section 2 sensitivity scenarios from the notebook's
-linear-cost, earthwork-cost, side-slope, cross-drainage-cost, Manning's n, and
-discount-rate sweeps: 23 tasks total. The side-slope sweep covers velocities
-0.425, 0.430, 0.435, and 0.440 m/s at side slopes 1.5, 2, and 2.5; the other
-sweeps use velocity 0.437 m/s. At most four tasks run concurrently. Each task
-uses a separate temporary working directory to prevent collisions in
-intermediate files. The runner skips a scenario if its output directory
-already exists.
+Each group currently has three tasks at velocity 0.437 m/s. The array runs up
+to three tasks concurrently; adjust the array range if the number of values in
+the selected group changes. Each task uses a separate temporary working
+directory to prevent collisions in intermediate files. The runner skips a
+scenario if its output directory already exists.
 
 The example run is given in `elliot_waterroute.ipynb`. 
