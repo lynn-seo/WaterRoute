@@ -995,7 +995,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
              loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth,
              sunWater_route,earthwork_cost_weight,
              approximate_length, linear_cost_weight, loss_weight, freeboard_weight, discount_rate=0.07, lifespan=50, 
-             side_slope):
+             *, side_slope):
     
     # startCell = (~aff * start)
     # finishCell = (~aff * finish)
