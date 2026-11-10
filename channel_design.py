@@ -322,12 +322,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.ratio_width_depth = ratio_width_depth
     CR.routing_water_depth = water_depth
     CR.routing_bed_width = bed_width
-    print(f"Calculated channel dimensions: slope = {CR.routing_targetSlope}, "
-          f"mannings_n = {CR.mannings_n}, "
-          f"side_slope = {CR.side_slope}, "
-          f"ratio_width_depth = {CR.ratio_width_depth}, "
-          f"water depth = {CR.routing_water_depth:.2f} m, bed width = {CR.routing_bed_width:.2f} m")
-
+    
     # Routing options
     CR.routing_contour = 27
     CR.routing_doCrossDrainage = True
@@ -348,7 +343,11 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.loss_weight  = LOSS_WEIGHT
     CR.freeboard_wieght = FREEBOARD_WEIGHT
     
-   
+    print(f"Calculated channel dimensions: slope = {CR.routing_targetSlope}, "
+                f"mannings_n = {CR.mannings_n}, "
+                f"side_slope = {CR.side_slope}, "
+                f"ratio_width_depth = {CR.ratio_width_depth}, "
+                f"water depth = {CR.routing_water_depth:.2f} m, bed width = {CR.routing_bed_width:.2f} m")
     CR.lifetime = 50
     
     CR.rockDepth = 5  # no longer used; kept in case channelcost still reads it
