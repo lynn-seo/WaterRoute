@@ -249,8 +249,8 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
         loss_weight = CR.loss_weight,
         freeboard_weight = CR.freeboard_weight,
         
-        
         lifespan=CR.lifetime,
+        side_slope=CR.side_slope,
     )
 
     _, profile, line = paths[list(paths.keys())[0]]

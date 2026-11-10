@@ -973,7 +973,7 @@ def elevRangePaths(output_path,dem,aff,crs,fr,to,targetSlope,start,finish,max_fi
                    loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth,
                    sunWater_route, approximate_length,
                    earthwork_cost_weight, linear_cost_weight, discount_rate, loss_weight, freeboard_weight,
-                   lifespan=50):
+                   lifespan=50, side_slope):
     paths = {}
     for elev in range(fr,to,1):
     # for i in range(0,1): #modified by Lynn to handle float start_elevation
@@ -984,7 +984,8 @@ def elevRangePaths(output_path,dem,aff,crs,fr,to,targetSlope,start,finish,max_fi
                         loss_value_dollar_per_ML, total_linear_cost,  withLengthPenalty, cost_array_with_rock_depth,
                         sunWater_route, earthwork_cost_weight, approximate_length,
                         linear_cost_weight=linear_cost_weight, loss_weight=loss_weight,
-                        freeboard_weight=freeboard_weight, discount_rate=discount_rate, lifespan=lifespan)
+                        freeboard_weight=freeboard_weight, discount_rate=discount_rate, lifespan=lifespan, 
+                        side_slope=side_slope)
         paths[elev] = path
     return paths
 
@@ -993,7 +994,8 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
              contour,doCrossDrainage,sampleF,bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
              loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth,
              sunWater_route,earthwork_cost_weight,
-             approximate_length, linear_cost_weight, loss_weight, freeboard_weight, discount_rate=0.07, lifespan=50):
+             approximate_length, linear_cost_weight, loss_weight, freeboard_weight, discount_rate=0.07, lifespan=50, 
+             side_slope):
     
     # startCell = (~aff * start)
     # finishCell = (~aff * finish)
@@ -1017,7 +1019,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
                 depthFlow = water_depth,
                 freeboard = freeboard,
                 crossGradient = 0,
-                sides = 2,
+                sides = side_slope,
                 batterSides = 1.5,
                 bermSlope = 1/20,
                 batterHeight = 5,
