@@ -201,8 +201,8 @@ def costs_calc(CR):
     #costs
     CR.length_km = CR.profile['short_distance(m)'].max()/1000
     
-    CR.unit_access_road_cost = CR.access_road_direct_cost_per_km * CR.linear_cost_factor
-    CR.access_road_cost = CR.access_road_direct_cost_per_km * CR.length_km * CR.linear_cost_factor
+    CR.unit_access_road_cost = CR.access_road_direct_cost_per_km * CR.linear_cost_weight
+    CR.access_road_cost = CR.access_road_direct_cost_per_km * CR.length_km 
     CR.mean_toe_to_toe_width =  CR.profile['full_width'].mean() 
     
     CR.unit_farm_crossing_cost = bridges.getTotalCostPerCrossing(BW = CR.reaches[0].bed_width, D = CR.reaches[0].water_depth+CR.reaches[0].freeboard, 
@@ -210,13 +210,13 @@ def costs_calc(CR):
     CR.reserve_width_m = CR.mean_toe_to_toe_width + CR.additional_reserve_width_m
     _linear_cost_per_km = channelLinearCosts.getTotalChannelLinearCost(reserveWidth = CR.reserve_width_m, noGates = 1)
 
-    CR.unit_easement_linear_costs_km = _linear_cost_per_km['Easement'] * CR.linear_cost_factor
-    CR.easement_linear_costs =_linear_cost_per_km['Easement']  * CR.length_km * CR.linear_cost_factor
+    CR.unit_easement_linear_costs_km = _linear_cost_per_km['Easement'] * CR.linear_cost_weight
+    CR.easement_linear_costs =_linear_cost_per_km['Easement']  * CR.length_km 
     
-    CR.unit_catch_drainage_linear_costs_km = _linear_cost_per_km['Catch drainage'] * CR.linear_cost_factor
-    CR.catch_drainage_costs =_linear_cost_per_km['Catch drainage']  * CR.length_km * CR.linear_cost_factor
-    CR.land_resumptions_and_relocations_cost = CR.land_resumptions_and_relocations_per_ha * CR.reserve_width_m * CR.length_km * 1000 / 10000
-    CR.SCADA_network_cost = CR.length_km * 3400 * CR.linear_cost_factor #from Kev, 2025
+    CR.unit_catch_drainage_linear_costs_km = _linear_cost_per_km['Catch drainage'] * CR.linear_cost_weight
+    CR.catch_drainage_costs =_linear_cost_per_km['Catch drainage']  * CR.length_km 
+    CR.land_resumptions_and_relocations_cost = CR.land_resumptions_and_relocations_per_ha * CR.reserve_width_m * CR.length_km * 1000 / 10000 * CR.linear_cost_weight
+    CR.SCADA_network_cost = CR.length_km * 3400 * CR.linear_cost_weight #from Kev, 2025
 
     CR.siphon_cost = 0
     CR.siphon_earthworks_cost_saving = 0

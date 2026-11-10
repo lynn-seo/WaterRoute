@@ -304,10 +304,10 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.routing_finish = cfg['finish']
     CR.routing_start_elevation = cfg['start_elevation']
     CR.gross_diversions_annual_m3_per_s = cfg['gross_diversions_m3_s']
-    CR.linear_cost_factor = linear_cost_factor
+    
     base_linear_cost = cfg['default_linear_cost'] if linear_cost is None else linear_cost
-    CR.total_linear_cost = base_linear_cost * CR.linear_cost_factor
-    print(f"Linear cost: {base_linear_cost} x {CR.linear_cost_factor} = {CR.total_linear_cost}")
+    CR.total_linear_cost = base_linear_cost 
+    
     # CR.total_loss_GL = cfg['total_loss_GL']
     CR.approximate_length = cfg['approximate_length_km']
     # CR.no_cells = cfg['no_cells']

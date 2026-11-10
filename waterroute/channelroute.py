@@ -444,47 +444,47 @@ def q40_rffe_old(lato,lono,latc,lonc,areakm,savePath=None):
     
     return Q40
 
-def make_specific_cost_array(relDEM, bed_width,water_depth,freeboard,additional_per_m_cost):
-    '''applies a cost of fill/cut function to a surface 
+# def make_specific_cost_array(relDEM, bed_width,water_depth,freeboard,additional_per_m_cost):
+#     '''applies a cost of fill/cut function to a surface 
     
-    relDEM is an elevation surface. Elevation are relative to the target natural surface gradeline
-    ---
-    rock: depth of rock layer
-    '''
+#     relDEM is an elevation surface. Elevation are relative to the target natural surface gradeline
+#     ---
+#     rock: depth of rock layer
+#     '''
 
-    results = []
+#     results = []
     
-    for dfl in range(-100,100):
-        #negative dfl is excavation in getCostEarthworks but relDEM is positive in these locations
-        works = earthworks.getCostEarthworks(DFL = -1 * dfl,
-                                                    bedWidth = bed_width,
-                                                    depthFlow = water_depth,
-                                                    freeboard = freeboard,
-                                                    crossGradient = 0,
-                                                    sides = 2,
-                                                    batterSides = 1.5,
-                                                    bermSlope = 1/20,
-                                                    batterHeight = 5,
-                                                    bermWidth = 4,
-                                                    bankWidth = 5,
-                                                    overExcavateBed = 1,
-                                                    overExcavateWall = 3,
-                                                    channelLined = False, #To update this to pass initial parameter into this function
-                                                    rockDepth = 5,)
-        results.append({'dfl':dfl,'cost':(works['Total Cost'] )
-                        +(additional_per_m_cost )})
-        # results.append({'dfl':dfl,'cost':annualised_cost(works['Total Cost'] )
-        #                 +annualised_cost(additional_per_m_cost )})
+#     for dfl in range(-100,100):
+#         #negative dfl is excavation in getCostEarthworks but relDEM is positive in these locations
+#         works = earthworks.getCostEarthworks(DFL = -1 * dfl,
+#                                                     bedWidth = bed_width,
+#                                                     depthFlow = water_depth,
+#                                                     freeboard = freeboard,
+#                                                     crossGradient = 0,
+#                                                     sides = 2,
+#                                                     batterSides = 1.5,
+#                                                     bermSlope = 1/20,
+#                                                     batterHeight = 5,
+#                                                     bermWidth = 4,
+#                                                     bankWidth = 5,
+#                                                     overExcavateBed = 1,
+#                                                     overExcavateWall = 3,
+#                                                     channelLined = False, #To update this to pass initial parameter into this function
+#                                                     rockDepth = 5,)
+#         results.append({'dfl':dfl,'cost':(works['Total Cost'] )
+#                         +(additional_per_m_cost )})
+#         # results.append({'dfl':dfl,'cost':annualised_cost(works['Total Cost'] )
+#         #                 +annualised_cost(additional_per_m_cost )})
 
-    df = pd.DataFrame(results)
-    df.index = df.dfl
-    #write pickle of df
-    # with open('df.pkl', 'wb') as f:
-    #      pickle.dump(df, f)
-    # with open('realDEM.pkl', 'wb') as f:
-    #      pickle.dump(relDEM, f)
+#     df = pd.DataFrame(results)
+#     df.index = df.dfl
+#     #write pickle of df
+#     # with open('df.pkl', 'wb') as f:
+#     #      pickle.dump(df, f)
+#     # with open('realDEM.pkl', 'wb') as f:
+#     #      pickle.dump(relDEM, f)
 
-    return np.interp(relDEM, df.dfl, df.cost)
+#     return np.interp(relDEM, df.dfl, df.cost)
 
 
 def annualised_cost(cost, discount_rate = 0.07, lifespan= 50, QandM_percent=0.02):
@@ -497,7 +497,8 @@ def annualised_cost(cost, discount_rate = 0.07, lifespan= 50, QandM_percent=0.02
         return cost * (discount_rate * (1 + discount_rate) ** lifespan) / ((1 + discount_rate) ** lifespan - 1) + cost * QandM_percent
 
 
-def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width, water_depth, freeboard, additional_per_m_cost, rockDepth_raster):
+def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width, water_depth, 
+                                           freeboard, additional_per_m_cost, rockDepth_raster):
     '''applies a cost of fill/cut function to a surface 
     
     relDEM is an elevation surface. Elevation are relative to the target natural surface gradeline
@@ -773,7 +774,8 @@ def get_min_max_indices(indices, sunwater_raster):
     return indices
 
 
-def calc_path(output_path, weight, target_elev, startCell,finishCell,aff, loss_value_dollar_per_ML, total_linear_cost, total_loss_ML,
+def calc_path(output_path, weight, target_elev, startCell,finishCell,aff, loss_value_dollar_per_ML, total_linear_cost, 
+              total_loss_ML,
               withLengthPenalty = True, is_sunwater_raster = False, approximate_length = 1,
               discount_rate = 0.07, lifespan = 50):
     
@@ -1046,11 +1048,10 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     earthWorkCost_curve.index = earthWorkCost_curve.apply(lambda row: f"{row.rock_depth}_{row.dfl}", axis=1)
 
     # weight_original = make_specific_cost_array(dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost)
-    if cost_array_with_rock_depth:
-        weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost, 
+    
+    weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, dem - contour,bed_width,
+                                                    water_depth,freeboard,additional_per_m_cost, 
                                                         rockDepth_raster)
-    else:
-        weight = make_specific_cost_array(dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost)
         
     # weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost, rockDepth_raster)
     
@@ -1079,7 +1080,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     # #addLayer(m,'contour_weight',1/weight,aff,crs,1,10,cm.viridis)
     #earthwork cost factor
     path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
-                                    total_linear_cost=total_linear_cost, total_loss_ML=total_loss_ML, 
+                                    total_linear_cost=total_linear_cost*linear_cost_weight, total_loss_ML=total_loss_ML, 
                                     withLengthPenalty=False, is_sunwater_raster = False,approximate_length=approximate_length,
                                     discount_rate=discount_rate, lifespan=lifespan)
     
@@ -1109,31 +1110,30 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
         slopeSurface = extrapolateSmoothFast(dem,path,cumDist*adj_targetSlope,sampleF = sampleF)
         flattened = dem - target_elev - slopeSurface
 
-        if cost_array_with_rock_depth:
-            weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, flattened,bed_width,water_depth,freeboard,additional_per_m_cost, 
+        
+        weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, flattened,bed_width,water_depth,freeboard,additional_per_m_cost, 
                                                             rockDepth_raster)
-        else:
-            weight = make_specific_cost_array(flattened,bed_width,water_depth,freeboard,additional_per_m_cost)
-                      
-        # with open(f'{output_path}_{target_elev}_weigth{iterN}.pkl', 'wb') as f:
-        #     pickle.dump(weight, f)
+        
         
         #addLayer(m,f'weight',weight,aff,crs,1,50000,cm.viridis)
         
         if sunWater_route and iterN == 4: #not used anymore
             path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
-                                          total_linear_cost=total_linear_cost, total_loss_ML=total_loss_ML, 
+                                          total_linear_cost=total_linear_cost*linear_cost_weight, #linear cost weight applied
+                                            total_loss_ML=total_loss_ML, 
                                         withLengthPenalty=withLengthPenalty, is_sunwater_raster = True,approximate_length=approximate_length,
                                         discount_rate=discount_rate, lifespan=lifespan)
         else:
             if iterN == 4:
                 path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
-                                          total_linear_cost=total_linear_cost, total_loss_ML=total_loss_ML,
+                                          total_linear_cost=total_linear_cost*linear_cost_weight,#linear cost weight applied
+                                            total_loss_ML=total_loss_ML,
                                             withLengthPenalty=withLengthPenalty, is_sunwater_raster = False, approximate_length=approximate_length,
                                             discount_rate=discount_rate, lifespan=lifespan)
             else:                
                 path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
-                                          total_linear_cost=total_linear_cost, total_loss_ML=total_loss_ML,
+                                          total_linear_cost=total_linear_cost*linear_cost_weight,#linear cost weight applied
+                                            total_loss_ML=total_loss_ML,
                                             withLengthPenalty=withLengthPenalty, is_sunwater_raster = False, approximate_length=approximate_length,
                                             discount_rate=discount_rate, lifespan=lifespan)
             
