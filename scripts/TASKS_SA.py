@@ -14,7 +14,7 @@ import channel_design
 from channel_design import candidate_designs, route_with_head_loss_iteration
 
 
-PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel/run9"
+PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel/run10"
 ROUTES_DIR = Path(
     os.environ.get("WATERROUTE_ROUTES_DIR", PROJECT_ROOT)
 ).expanduser().resolve()
@@ -58,8 +58,8 @@ class VELOCITIES(tuple):
         return f"{self.__class__.__name__}({list(self)!r})"
 
 
-# VELOCITIES = VELOCITIES(0.421, 0.451, 0.002)
-VELOCITIES = (BASE_VELOCITY,)
+VELOCITIES = VELOCITIES(0.301, 0.701, 0.002)
+# VELOCITIES = (BASE_VELOCITY,)
 default_SIDE_SLOPE = 2
 # default_MANNING_N = 0.031
 default_MANNING_N = 0.03

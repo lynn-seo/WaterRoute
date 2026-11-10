@@ -497,8 +497,7 @@ def annualised_cost(cost, discount_rate = 0.07, lifespan= 50, QandM_percent=0.02
         return cost * (discount_rate * (1 + discount_rate) ** lifespan) / ((1 + discount_rate) ** lifespan - 1) + cost * QandM_percent
 
 
-def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width, water_depth, freeboard, additional_per_m_cost, rockDepth_raster, 
-                                           earthwork_cost_weight):
+def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width, water_depth, freeboard, additional_per_m_cost, rockDepth_raster):
     '''applies a cost of fill/cut function to a surface 
     
     relDEM is an elevation surface. Elevation are relative to the target natural surface gradeline
@@ -548,9 +547,9 @@ def make_specific_cost_array_withRockDepth(earthWorkCost_curve, relDEM,bed_width
     #      pickle.dump(earthWorkCost_curve, f)
     # with open('realDEM.pkl', 'wb') as f:
     #      pickle.dump(relDEM, f)
-    print(f"Earthwork cost weight: {earthwork_cost_weight}")
+    # print(f"Earthwork cost weight: {earthwork_cost_weight}")
 
-    return specific_cost_array2*earthwork_cost_weight
+    return specific_cost_array2
 
 
 
@@ -1049,7 +1048,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     # weight_original = make_specific_cost_array(dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost)
     if cost_array_with_rock_depth:
         weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost, 
-                                                        rockDepth_raster, earthwork_cost_weight)
+                                                        rockDepth_raster)
     else:
         weight = make_specific_cost_array(dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost)
         
@@ -1112,7 +1111,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
 
         if cost_array_with_rock_depth:
             weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, flattened,bed_width,water_depth,freeboard,additional_per_m_cost, 
-                                                            rockDepth_raster, earthwork_cost_weight)
+                                                            rockDepth_raster)
         else:
             weight = make_specific_cost_array(flattened,bed_width,water_depth,freeboard,additional_per_m_cost)
                       
