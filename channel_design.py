@@ -326,7 +326,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     # Routing options
     CR.routing_contour = 27
     CR.routing_doCrossDrainage = True
-    CR.routing_freeboard = FREEBOARD * FREEBOARD_WEIGHT
+    CR.routing_freeboard = FREEBOARD 
     CR.routing_additional_per_m_cost = 2000
     CR.lined = False
 
@@ -341,7 +341,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
 
     CR.hydraulic_loss_weight = HYDRAULIC_LOSS_WEIGHT
     CR.loss_weight  = LOSS_WEIGHT
-    CR.freeboard_wieght = FREEBOARD_WEIGHT
+    CR.freeboard_weight = FREEBOARD_WEIGHT
     
     print(f"Calculated channel dimensions: slope = {CR.routing_targetSlope}, "
                 f"mannings_n = {CR.mannings_n}, "
