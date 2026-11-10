@@ -973,7 +973,7 @@ def elevRangePaths(output_path,dem,aff,crs,fr,to,targetSlope,start,finish,max_fi
                    loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth,
                    sunWater_route, approximate_length,
                    earthwork_cost_weight, linear_cost_weight, discount_rate, loss_weight, freeboard_weight,
-                   lifespan=50, side_slope):
+                   lifespan=50, *, side_slope):
     paths = {}
     for elev in range(fr,to,1):
     # for i in range(0,1): #modified by Lynn to handle float start_elevation
