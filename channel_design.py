@@ -65,7 +65,6 @@ DISCOUNT_RATE = 0.07
 EARTHWORK_COST_WEIGHT = LINEAR_COST_WEIGHT = CROSS_DRAINAGE_COST_WEIGHT = 1.0
 LINEAR_COST_WEIGHT = HYDRAULIC_LOSS_WEIGHT = LOSS_WEIGHT = FREEBOARD_WEIGHT = 1.0
 FREEBOARD = 1.0
-SIDE_SLOPE = 2
 
 
 def configure(**settings):
@@ -317,15 +316,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.cost_array_with_rock_depth = cost_array_with_rock_depth
     CR.withLengthPenalty = is_length_penalty
     CR.sunWater_route = sunWater_route
-    CR.earthwork_cost_weight = earthwork_cost_weight
-    CR.side_slope = SIDE_SLOPE
-    CR.hydraulic_loss_factor = HYDRAULIC_LOSS_WEIGHT
-    CR.loss_factor = LOSS_WEIGHT
-    CR.freeboard_factor = FREEBOARD_WEIGHT
-    CR.linear_cost_weight = LINEAR_COST_WEIGHT
-    CR.loss_weight = LOSS_WEIGHT
-    CR.freeboard_weight = FREEBOARD_WEIGHT
-
+    
     # Channel dimensions
     CR.mannings_n = MANNING_N
     CR.ratio_width_depth = ratio_width_depth
@@ -345,11 +336,21 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.lined = False
 
     # SA factors
-    CR.earthwork_cost_factor = EARTHWORK_COST_WEIGHT
-    CR.cross_drainage_cost_factor = CROSS_DRAINAGE_COST_WEIGHT
-
-    CR.lifetime = 50
+    CR.earthwork_cost_weight = EARTHWORK_COST_WEIGHT
+    CR.linear_cost_weight = LINEAR_COST_WEIGHT
+    
+    CR.side_slope = SIDE_SLOPE
+    CR.cross_drainage_cost_weight = CROSS_DRAINAGE_COST_WEIGHT
+ 
     CR.discount_rate = DISCOUNT_RATE
+
+    CR.hydraulic_loss_weight = HYDRAULIC_LOSS_WEIGHT
+    CR.loss_weight  = LOSS_WEIGHT
+    CR.freeboard_wieght = FREEBOARD_WEIGHT
+    
+   
+    CR.lifetime = 50
+    
     CR.rockDepth = 5  # no longer used; kept in case channelcost still reads it
     # Based on 19.4 m3/s; may be superseded by the capacity-based delivery calculation
     CR.gross_diversions_annual_l = 608.645 * 1E9

@@ -235,12 +235,14 @@ def costs_calc(CR):
         df = CR.profile[CR.profile['q40']>0].apply(lambda x: cross_drainage.select_cross_drain(x['q40'],x['full_width']),axis='columns', result_type='expand')
         df.rename(columns={0:'cross_drain_cost', 1:'cross_drain_number_of_barrels', 2:'cross_drain_diameter'},inplace = True)
         CR.profile =  CR.profile.merge(df,left_index=True, right_index=True,how='left')
+        CR.profile['cross_drain_cost'] = CR.profile['cross_drain_cost']*CR.cross_drainage_cost_weight
 
         #costs for siphons at all streams - some of these might not be used as they will be cross drains
         #direct_cost,actual_D,num_barrels,V = inlineAndSiphonControlStructures.select_siphon(bedWidth,waterDepth,freeboard,capacity_m3_s,siphon_length)
         df = CR.profile[CR.profile['q40']>0].apply(lambda x: inlineAndSiphonControlStructures.select_siphon(x['bed_width'],x['water_depth'],x['freeboard'],x['capacity_m3_per_s'],x['length_of_siphon(m)']),axis='columns', result_type='expand')
         df.rename(columns={0:'siphon_cost', 1:'siphon_pipe_D', 2:'siphon_number_of_barrels', 3:'siphon_velocity'},inplace = True)
         CR.profile =  CR.profile.merge(df,left_index=True, right_index=True,how='left') 
+        CR.profile['siphon_cost'] = CR.profile['siphon_cost']*CR.cross_drainage_cost_weight
         
         #If cross drain capacity larger than 6 times of channel flow, use siphon else culvert 
         # CR.profile['type_cross_drain'] = CR.profile['type_cross_drain'].astype(object)
