@@ -5,13 +5,14 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --array=0-2%3
+#SBATCH --array=0-599%3
 #SBATCH --account=OD-239352
 
 set -euo pipefail
 
 TASK_GROUP="${1:?Submit with: sbatch submit_SA.slurm <LC|EW|SS|CD|MN|DR|HL|LF|FB>}"
 
+# Each group has 3 parameter values and 200 velocities in TASKS_SA.py.
 # SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_DIR="/scratch3/seo010/v2210/waterRoute/scripts"
 REPO_ROOT="/scratch3/seo010/v2210/waterRoute"
