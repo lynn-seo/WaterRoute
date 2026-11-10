@@ -217,16 +217,16 @@ def main(task_index, task_group):
         RESIDUAL_HEAD_LOSS_TOL_M=RESIDUAL_HEAD_LOSS_TOL_M,
 
         EARTHWORK_COST_WEIGHT=earthwork_cost_weight,
-        LINEAR_COST_FACTOR=linear_cost_weight,
+        LINEAR_COST_WEIGHT=linear_cost_weight,
         SIDE_SLOPE=side_slope,
-        CROSS_DRAINAGE_COST_FACTOR=cross_drainage_cost_weight,
+        CROSS_DRAINAGE_COST_WEIGHT=cross_drainage_cost_weight,
 
         MANNING_N=manning_n,
         DISCOUNT_RATE=discount_rate,
 
-        HYDRAULIC_LOSS_FACTOR=hydraulic_loss_weight,
-        LOSS_FACTOR=loss_weight,
-        FREEBOARD_FACTOR=freeboard_weight,
+        HYDRAULIC_LOSS_WEIGHT=hydraulic_loss_weight,
+        LOSS_WEIGHT=loss_weight,
+        FREEBOARD_WEIGHT=freeboard_weight,
 
         SECTIONS=SECTIONS,
     )
@@ -245,23 +245,23 @@ def main(task_index, task_group):
     )
 
     for section, ratio, depth, width, slope_1_in_x, velocity in designs:
-        if parameter in ("linear_cost_factor"):
+        if parameter == "linear_cost_weight":
             suffix = f"-LC{float(round(value, 3))}"
         elif parameter == "earthwork_cost_weight":
             suffix = f"-EW{float(round(value, 3))}"
         elif parameter == "side_slope":
             suffix = f"-SS{float(round(value, 3))}"
-        elif parameter == "cross_drainage_cost_factor":
+        elif parameter == "cross_drainage_cost_weight":
             suffix = f"-CD{float(round(value, 3))}"
         elif parameter == "manning_n":
             suffix = f"-MN{float(round(value, 3))}"
         elif parameter == "discount_rate":
             suffix = f"-DR{float(round(value, 3))}"
-        elif parameter == "hydraulic_loss_factor":
+        elif parameter == "hydraulic_loss_weight":
             suffix = f"-HL{float(round(value, 3))}"
-        elif parameter == "loss_factor":
+        elif parameter == "loss_weight":
             suffix = f"-LF{float(round(value, 3))}"
-        elif parameter == "freeboard_factor":
+        elif parameter == "freeboard_weight":
             suffix = f"-FB{float(round(value, 3))}"
         
 

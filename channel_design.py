@@ -49,16 +49,20 @@ def _array_tile_init(self, in_array, in_affine, in_crs):
 # ---- Settings (set from the notebook with configure) ----
 SETTINGS = (
     'ROUTES_DIR', 'SEQUENTIAL_RUN_TEMPLATE', 'DEM_PATH', 'ROCK_DEPTH_PATH', 'ROUTING_BOUNDS',
-    'MANNING_N', 'SIDE_SLOPE', 'SAMPLE_F', 'MAX_FILL_SIPHON_ENDS',
-    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_WEIGHT', 'DISCOUNT_RATE',
+    'SAMPLE_F', 'MAX_FILL_SIPHON_ENDS',
+    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 
+    'SECTIONS',
+    
+    'MANNING_N', 'SIDE_SLOPE', 
+    'CROSS_DRAINAGE_COST_WEIGHT', 'DISCOUNT_RATE',
     'EARTHWORK_COST_WEIGHT', 'LINEAR_COST_WEIGHT', 'HYDRAULIC_LOSS_WEIGHT',
-    'LOSS_WEIGHT', 'FREEBOARD_WEIGHT', 'FREEBOARD', 'SECTIONS',
+    'LOSS_WEIGHT', 'FREEBOARD_WEIGHT', 'FREEBOARD', 
 )
 ROUTES_DIR = SEQUENTIAL_RUN_TEMPLATE = DEM_PATH = ROCK_DEPTH_PATH = ROUTING_BOUNDS = None
 MANNING_N = SIDE_SLOPE = SAMPLE_F = MAX_FILL_SIPHON_ENDS = None
 MAX_RUNS = RESIDUAL_HEAD_LOSS_TOL_M = SECTIONS = None
 DISCOUNT_RATE = 0.07
-EARTHWORK_COST_WEIGHT = LINEAR_COST_WEIGHT =  CROSS_DRAINAGE_COST_WEIGHT = EARTHWORK_COST_WEIGHT = 1.0
+EARTHWORK_COST_WEIGHT = LINEAR_COST_WEIGHT = CROSS_DRAINAGE_COST_WEIGHT = 1.0
 LINEAR_COST_WEIGHT = HYDRAULIC_LOSS_WEIGHT = LOSS_WEIGHT = FREEBOARD_WEIGHT = 1.0
 FREEBOARD = 1.0
 
@@ -247,7 +251,6 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
         
         
         lifespan=CR.lifetime,
-        loss_factor=CR.loss_factor,
     )
 
     _, profile, line = paths[list(paths.keys())[0]]
@@ -289,7 +292,7 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     if earthwork_cost_weight is None:
         earthwork_cost_weight = EARTHWORK_COST_WEIGHT
     if linear_cost_factor is None:
-        linear_cost_factor = LINEAR_COST_FACTOR
+        linear_cost_factor = LINEAR_COST_WEIGHT
 
     CR.routing_bounds = ROUTING_BOUNDS
     CR.routing_out_name = run_name
@@ -318,6 +321,9 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.hydraulic_loss_factor = HYDRAULIC_LOSS_WEIGHT
     CR.loss_factor = LOSS_WEIGHT
     CR.freeboard_factor = FREEBOARD_WEIGHT
+    CR.linear_cost_weight = LINEAR_COST_WEIGHT
+    CR.loss_weight = LOSS_WEIGHT
+    CR.freeboard_weight = FREEBOARD_WEIGHT
 
     # Channel dimensions
     CR.mannings_n = MANNING_N
@@ -379,7 +385,7 @@ def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, 
     if earthwork_cost_weight is None:
         earthwork_cost_weight = EARTHWORK_COST_WEIGHT
     if linear_cost_factor is None:
-        linear_cost_factor = LINEAR_COST_FACTOR
+        linear_cost_factor = LINEAR_COST_WEIGHT
 
     channel_capacity_m3_s = SECTIONS[section]['gross_diversions_m3_s']
 

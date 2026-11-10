@@ -980,9 +980,10 @@ def elevRangePaths(output_path,dem,aff,crs,fr,to,targetSlope,start,finish,max_fi
         # print (f'target elevation is {elev}')
         path = elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_ends,elev, contour,doCrossDrainage,sampleF,
                         bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster,
-                        loss_value_dollar_per_ML, total_linear_cost,  withLengthPenalty, cost_array_with_rock_depth, 
-                        sunWater_route,earthwork_cost_weight, approximate_length, discount_rate, lifespan,
-                        linear_cost_weight=linear_cost_weight, loss_weight=loss_weight, freeboard_weight=freeboard_weight)
+                        loss_value_dollar_per_ML, total_linear_cost,  withLengthPenalty, cost_array_with_rock_depth,
+                        sunWater_route, earthwork_cost_weight, approximate_length,
+                        linear_cost_weight=linear_cost_weight, loss_weight=loss_weight,
+                        freeboard_weight=freeboard_weight, discount_rate=discount_rate, lifespan=lifespan)
         paths[elev] = path
     return paths
 
