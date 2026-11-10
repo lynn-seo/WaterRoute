@@ -64,12 +64,19 @@ default_SIDE_SLOPE = 2
 # default_MANNING_N = 0.031
 default_MANNING_N = 0.03
 default_DISCOUNT_RATE = 0.07
+default_EARTHWORK_COST_WEIGHT = 1
+default_LINEAR_COST_WEIGHT = 1
+default_CROSS_DRAINAGE_COST_WEIGHT = 1
+default_HYDRAULIC_LOSS_WEIGHT = 1
+default_LOSS_WEIGHT = 1
+default_FREEBOARD_WEIGHT = 1
+
 
 EARTHWORK_COST_WEIGHTS = (0.7, 1, 1.3)
-LINEAR_COST_FACTORS = (0.7, 1, 1.3)
+LINEAR_COST_WEIGHTS = (0.7, 1, 1.3)
 SIDE_SLOPES = (1.5, 2.0, 2.5)
 
-CROSS_DRAINAGE_COST_FACTORS = (0.5, 1, 1.5)
+CROSS_DRAINAGE_COST_WEIGHTS = (0.5, 1, 1.5)
 MANNING_N_VALUES = (0.025, 0.030, 0.037)
 DISCOUNT_RATES = (0.03, 0.07, 0.1)
 
@@ -108,8 +115,8 @@ TASKS = (
             for velocity in VELOCITIES
        ]
     + [
-        ("LC", velocity, "linear_cost_factor", factor)
-        for factor in LINEAR_COST_FACTORS
+        ("LC", velocity, "linear_cost_weight", factor)
+        for factor in LINEAR_COST_WEIGHTS
         for velocity in VELOCITIES
     ]
     
@@ -119,12 +126,12 @@ TASKS = (
         for velocity in VELOCITIES
     ]
     + [
-        ("CD", velocity, "cross_drainage_cost_factor", factor)
-        for factor in CROSS_DRAINAGE_COST_FACTORS
+        ("CD", velocity, "cross_drainage_cost_weight", factor)
+        for factor in CROSS_DRAINAGE_COST_WEIGHTS
         for velocity in VELOCITIES
     ]
     + [
-        ("MN", velocity, "manning_n", manning_n)#5
+        ("MN", velocity, "manning_n", manning_n) #5
         for manning_n in MANNING_N_VALUES
         for velocity in VELOCITIES
     ]
@@ -134,17 +141,17 @@ TASKS = (
         for velocity in VELOCITIES
     ]
     + [
-        ("HL", velocity, "hydraulic_loss_factor", factor)
+        ("HL", velocity, "hydraulic_loss_weight", factor)
         for factor in HYDRAULIC_LOSS_FACTORS
         for velocity in VELOCITIES
     ]
     + [
-        ("LF", velocity, "loss_factor", factor)
+        ("LF", velocity, "loss_weight", factor)
         for factor in LOSS_FACTORS
         for velocity in VELOCITIES
     ]
     + [
-        ("FB", velocity, "freeboard_factor", factor)
+        ("FB", velocity, "freeboard_weight", factor)
         for factor in FREEBOARD_FACTORS
         for velocity in VELOCITIES
     ]
@@ -178,28 +185,49 @@ def main(task_index, task_group):
         )
 
     version, velocity, parameter, value = selected_tasks[task_index]
+
+    # Sensitivity parameters
+    earthwork_cost_weight = value if parameter == "earthwork_cost_weight" else default_EARTHWORK_COST_WEIGHT
+    linear_cost_weight = value if parameter == "linear_cost_weight" else default_LINEAR_COST_WEIGHT
+
     side_slope = value if parameter == "side_slope" else default_SIDE_SLOPE
+    cross_drainage_cost_weight = value if parameter == "cross_drainage_cost_weight" else default_CROSS_DRAINAGE_COST_WEIGHT
+
     manning_n = value if parameter == "manning_n" else default_MANNING_N
-    cross_drainage_cost_factor = (
-        value if parameter == "cross_drainage_cost_factor" else 1
-    )
     discount_rate = value if parameter == "discount_rate" else default_DISCOUNT_RATE
-    ROUTES_DIR.mkdir(parents=True, exist_ok=True)
+
+    hydraulic_loss_weight = value if parameter == "hydraulic_loss_weight" else default_HYDRAULIC_LOSS_WEIGHT
+    loss_weight = value if parameter == "loss_weight" else default_LOSS_WEIGHT
+
+    freeboard_weight = value if parameter == "freeboard_weight" else default_FREEBOARD_WEIGHT
+
+
+    task_routes_dir = ROUTES_DIR / task_group
+    task_routes_dir.mkdir(parents=True, exist_ok=True)
     #this defines modelling configurations
     channel_design.configure(
-        ROUTES_DIR=str(ROUTES_DIR),
+        ROUTES_DIR=str(task_routes_dir),
         SEQUENTIAL_RUN_TEMPLATE=str(SEQUENTIAL_RUN_TEMPLATE),
         DEM_PATH=str(DEM_PATH),
         ROCK_DEPTH_PATH=str(ROCK_DEPTH_PATH),
         ROUTING_BOUNDS=(147, -21, 149, -19),
-        MANNING_N=manning_n,
-        SIDE_SLOPE=side_slope,
         SAMPLE_F=250,
         MAX_FILL_SIPHON_ENDS=5,
         MAX_RUNS=MAX_RUNS,
         RESIDUAL_HEAD_LOSS_TOL_M=RESIDUAL_HEAD_LOSS_TOL_M,
-        CROSS_DRAINAGE_COST_FACTOR=cross_drainage_cost_factor,
+
+        EARTHWORK_COST_WEIGHT=earthwork_cost_weight,
+        LINEAR_COST_FACTOR=linear_cost_weight,
+        SIDE_SLOPE=side_slope,
+        CROSS_DRAINAGE_COST_FACTOR=cross_drainage_cost_weight,
+
+        MANNING_N=manning_n,
         DISCOUNT_RATE=discount_rate,
+
+        HYDRAULIC_LOSS_FACTOR=hydraulic_loss_weight,
+        LOSS_FACTOR=loss_weight,
+        FREEBOARD_FACTOR=freeboard_weight,
+
         SECTIONS=SECTIONS,
     )
     #this desides intiial channel dimension, slope, velocity
@@ -207,8 +235,8 @@ def main(task_index, task_group):
         SECTION,
         ratios=RATIOS,
         velocities=(velocity,),
-        manning_n=manning_n if parameter == "manning_n" else None,
-        z=side_slope if parameter == "side_slope" else None,
+        manning_n=manning_n,
+        z=side_slope,
     )
     print(
         f"Task {task_index}: {version}, section={SECTION}, "
@@ -241,19 +269,16 @@ def main(task_index, task_group):
             f"{version}-{section}-r{ratio}-d{depth}-w{width}"
             f"-S{slope_1_in_x}-v{velocity:.3f}{suffix}"
         )
-        existing_run_dir = ROUTES_DIR / run_name
+        existing_run_dir = task_routes_dir / run_name
         if existing_run_dir.exists():
             print(f"Exists, skipping: {existing_run_dir}", flush=True)
             continue
 
         print(f"Running {run_name}; {parameter}={value}", flush=True)
         route_kwargs = {
-            "earthwork_cost_weight": (
-                value if parameter == "earthwork_cost_weight" else 1
-            ),
+            "earthwork_cost_weight": earthwork_cost_weight,
+            "linear_cost_factor": linear_cost_weight,
         }
-        if parameter == "linear_cost_factor":
-            route_kwargs["linear_cost_factor"] = value
         route_with_head_loss_iteration(
             number_of_runs=3,
             width_to_depth_ratio=ratio,

@@ -968,26 +968,30 @@ def smooth(y, box_pts=30):
 
 
 def elevRangePaths(output_path,dem,aff,crs,fr,to,targetSlope,start,finish,max_fill_siphon_ends, contour,doCrossDrainage,sampleF,
-                   bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
-                   loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth, 
-                   sunWater_route,earthwork_cost_weight, approximate_length, discount_rate=0.07, lifespan=50):
+                   bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster,  
+                   loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth,
+                   sunWater_route, approximate_length,
+                   earthwork_cost_weight, linear_cost_weight, discount_rate, loss_weight, freeboard_weight,
+                   lifespan=50):
     paths = {}
     for elev in range(fr,to,1):
     # for i in range(0,1): #modified by Lynn to handle float start_elevation
         # elev = fr + i
         # print (f'target elevation is {elev}')
         path = elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_ends,elev, contour,doCrossDrainage,sampleF,
-                        bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
-                        loss_value_dollar_per_ML, total_linear_cost,  withLengthPenalty, cost_array_with_rock_depth,
-                        sunWater_route,earthwork_cost_weight, approximate_length, discount_rate, lifespan )
+                        bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster,
+                        loss_value_dollar_per_ML, total_linear_cost,  withLengthPenalty, cost_array_with_rock_depth, 
+                        sunWater_route,earthwork_cost_weight, approximate_length, discount_rate, lifespan,
+                        linear_cost_weight=linear_cost_weight, loss_weight=loss_weight, freeboard_weight=freeboard_weight)
         paths[elev] = path
     return paths
 
         
 def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_ends,target_elev,
              contour,doCrossDrainage,sampleF,bed_width,water_depth,freeboard,additional_per_m_cost, channel_capacity, rockDepth_raster, 
-             loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth, sunWater_route,earthwork_cost_weight,
-               approximate_length, discount_rate=0.07, lifespan=50):
+             loss_value_dollar_per_ML, total_linear_cost, withLengthPenalty, cost_array_with_rock_depth,
+             sunWater_route,earthwork_cost_weight,
+             approximate_length, linear_cost_weight, loss_weight, freeboard_weight, discount_rate=0.07, lifespan=50):
     
     # startCell = (~aff * start)
     # finishCell = (~aff * finish)
@@ -1026,7 +1030,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
                 'rock_depth': rock_depth,
                 'dfl': dfl,
                 'cost': annualised_cost(
-                    works['Total Cost'],
+                    works['Total Cost'] * earthwork_cost_weight,
                     discount_rate=discount_rate,
                     lifespan=lifespan,
                 ) + annualised_cost(
@@ -1054,7 +1058,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     #         pickle.dump(weight_original, f)
     # with open(f'{output_path}_{target_elev}_weight_with_rock_depth.pkl', 'wb') as f:
     #         pickle.dump(weight, f)
-    
+    #this is just to calculate channel dimension, ignore the rockDepth = 5, 
     properties_earthworks = earthworks.getCostEarthworks(DFL = 0,bedWidth = bed_width, depthFlow = water_depth, freeboard = freeboard,channelLined = False , rockDepth = 5)
     water_section_area = properties_earthworks['Geometries']['waterSection'].area
     wetted_perimeter = properties_earthworks['Geometries']['wettedPerimeterSection'].length
@@ -1064,7 +1068,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
                         evapPeakDaily = 6, bedPerimeter = bed_width, k = 0.002, 
                         lossEachStockDomestic = 2, spacingStockDomestic = 2, leakageRate = 0, channelXSection = water_section_area,rolling_shutdown_factor = 1, 
                         waterDepth= water_depth)
-    
+
     pd.Series(annual_loss_ML_per_annum, name='ML_per_annum').to_csv(
         f'{output_path}_{target_elev}_annual_loss.csv',
         header=True
@@ -1073,7 +1077,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     total_loss_ML = annual_loss_ML_per_annum['Total'] 
 
     # #addLayer(m,'contour_weight',1/weight,aff,crs,1,10,cm.viridis)
-    
+    #earthwork cost factor
     path,l,lDist,cumDist = calc_path(output_path, weight,target_elev,startCell,finishCell,aff, loss_value_dollar_per_ML,
                                     total_linear_cost=total_linear_cost, total_loss_ML=total_loss_ML, 
                                     withLengthPenalty=False, is_sunwater_raster = False,approximate_length=approximate_length,

@@ -50,13 +50,16 @@ def _array_tile_init(self, in_array, in_affine, in_crs):
 SETTINGS = (
     'ROUTES_DIR', 'SEQUENTIAL_RUN_TEMPLATE', 'DEM_PATH', 'ROCK_DEPTH_PATH', 'ROUTING_BOUNDS',
     'MANNING_N', 'SIDE_SLOPE', 'SAMPLE_F', 'MAX_FILL_SIPHON_ENDS',
-    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_FACTOR', 'DISCOUNT_RATE',
-    'FREEBOARD', 'SECTIONS',
+    'MAX_RUNS', 'RESIDUAL_HEAD_LOSS_TOL_M', 'CROSS_DRAINAGE_COST_WEIGHT', 'DISCOUNT_RATE',
+    'EARTHWORK_COST_WEIGHT', 'LINEAR_COST_WEIGHT', 'HYDRAULIC_LOSS_WEIGHT',
+    'LOSS_WEIGHT', 'FREEBOARD_WEIGHT', 'FREEBOARD', 'SECTIONS',
 )
 ROUTES_DIR = SEQUENTIAL_RUN_TEMPLATE = DEM_PATH = ROCK_DEPTH_PATH = ROUTING_BOUNDS = None
 MANNING_N = SIDE_SLOPE = SAMPLE_F = MAX_FILL_SIPHON_ENDS = None
-MAX_RUNS = RESIDUAL_HEAD_LOSS_TOL_M = CROSS_DRAINAGE_COST_FACTOR = SECTIONS = None
+MAX_RUNS = RESIDUAL_HEAD_LOSS_TOL_M = SECTIONS = None
 DISCOUNT_RATE = 0.07
+EARTHWORK_COST_WEIGHT = LINEAR_COST_WEIGHT =  CROSS_DRAINAGE_COST_WEIGHT = EARTHWORK_COST_WEIGHT = 1.0
+LINEAR_COST_WEIGHT = HYDRAULIC_LOSS_WEIGHT = LOSS_WEIGHT = FREEBOARD_WEIGHT = 1.0
 FREEBOARD = 1.0
 
 
@@ -233,10 +236,18 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
         withLengthPenalty=CR.withLengthPenalty,
         cost_array_with_rock_depth=CR.cost_array_with_rock_depth,
         sunWater_route=CR.sunWater_route,
-        earthwork_cost_weight = CR.earthwork_cost_weight,
+        
         approximate_length=CR.approximate_length,
-        discount_rate=CR.discount_rate,
+
+        earthwork_cost_weight = CR.earthwork_cost_weight,
+        linear_cost_weight = CR.linear_cost_weight,
+        discount_rate=CR.discount_rate,        
+        loss_weight = CR.loss_weight,
+        freeboard_weight = CR.freeboard_weight,
+        
+        
         lifespan=CR.lifetime,
+        loss_factor=CR.loss_factor,
     )
 
     _, profile, line = paths[list(paths.keys())[0]]
@@ -267,14 +278,18 @@ def run_routing(CR, dem_ratio=1, dem=None, aff=None, crs=None):
 def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_slope=None,
                 bed_width=None, water_depth=None, linear_cost=None,
                 loss_value_dollar_per_ML=75, is_length_penalty=True,
-                cost_array_with_rock_depth=True, sunWater_route=False, earthwork_cost_weight=1.0,
-                linear_cost_factor=1.0):
+                cost_array_with_rock_depth=True, sunWater_route=False, earthwork_cost_weight=None,
+                linear_cost_factor=None):
     """Configure a Channel_Route for the given section and run it."""
     if section not in SECTIONS:
         raise ValueError(f"Unknown section {section!r}; expected one of {list(SECTIONS)}")
     cfg = SECTIONS[section]
 
     CR = channelcost.Channel_Route()
+    if earthwork_cost_weight is None:
+        earthwork_cost_weight = EARTHWORK_COST_WEIGHT
+    if linear_cost_factor is None:
+        linear_cost_factor = LINEAR_COST_FACTOR
 
     CR.routing_bounds = ROUTING_BOUNDS
     CR.routing_out_name = run_name
@@ -300,6 +315,9 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     CR.sunWater_route = sunWater_route
     CR.earthwork_cost_weight = earthwork_cost_weight
     CR.side_slope = SIDE_SLOPE
+    CR.hydraulic_loss_factor = HYDRAULIC_LOSS_WEIGHT
+    CR.loss_factor = LOSS_WEIGHT
+    CR.freeboard_factor = FREEBOARD_WEIGHT
 
     # Channel dimensions
     CR.mannings_n = MANNING_N
@@ -315,12 +333,14 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     # Routing options
     CR.routing_contour = 27
     CR.routing_doCrossDrainage = True
-    CR.routing_freeboard = FREEBOARD
+    CR.routing_freeboard = FREEBOARD * FREEBOARD_WEIGHT
     CR.routing_additional_per_m_cost = 2000
     CR.lined = False
 
-    # Cost model
-    CR.cross_drainage_cost_factor = CROSS_DRAINAGE_COST_FACTOR
+    # SA factors
+    CR.earthwork_cost_factor = EARTHWORK_COST_WEIGHT
+    CR.cross_drainage_cost_factor = CROSS_DRAINAGE_COST_WEIGHT
+
     CR.lifetime = 50
     CR.discount_rate = DISCOUNT_RATE
     CR.rockDepth = 5  # no longer used; kept in case channelcost still reads it
@@ -354,8 +374,13 @@ def get_cost_scalar(df, key):
 def route_with_head_loss_iteration(number_of_runs=3, width_to_depth_ratio=None, water_depth=None, bed_width=None,
                                    run_name=None, section='section1', slope_for_channel_dimension=1/15000,
                                    linear_cost=None, loss_value_dollar_per_ML=75, is_length_penalty=True,
-                                   cost_array_with_rock_depth=True, earthwork_cost_weight=1.0,
-                                   linear_cost_factor=1.0):
+                                   cost_array_with_rock_depth=True, earthwork_cost_weight=None,
+                                   linear_cost_factor=None):
+    if earthwork_cost_weight is None:
+        earthwork_cost_weight = EARTHWORK_COST_WEIGHT
+    if linear_cost_factor is None:
+        linear_cost_factor = LINEAR_COST_FACTOR
+
     channel_capacity_m3_s = SECTIONS[section]['gross_diversions_m3_s']
 
     # 1 or 2 stop early; any larger value allows up to MAX_RUNS runs
