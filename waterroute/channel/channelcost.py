@@ -107,7 +107,7 @@ def costs_calc(CR):
         
         #change above to refer the depth and width dected in channelroute.py, solver, def find_channel_dimension
 
-        reach.freeboard = CR.freeboard
+        reach.freeboard = CR.freeboard * CR.freeboard_weight
         if CR.freeboard is None:
             reach.freeboard = 0.2 * reach.water_depth + 0.3
 
@@ -166,7 +166,7 @@ def costs_calc(CR):
         
         CR.profile.loc[reach.start_location_id:reach.end_location_id,'bed_width'] = reach.bed_width
         CR.profile.loc[reach.start_location_id:reach.end_location_id,'water_depth'] = reach.water_depth
-        CR.profile.loc[reach.start_location_id:reach.end_location_id,'freeboard'] = reach.freeboard
+        CR.profile.loc[reach.start_location_id:reach.end_location_id,'freeboard'] = reach.freeboard 
         CR.profile.loc[reach.start_location_id:reach.end_location_id,'capacity_m3_per_s'] = reach.start_diversion_m3_per_s
 
         reach.farm_crossing_costs = (reach.length_km/CR.distance_between_farm_crossing_km) * bridges.getTotalCostPerCrossing(BW = reach.bed_width, D = reach.water_depth+reach.freeboard, crossingType='farm access')['Total']

@@ -1017,7 +1017,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
                 DFL = - 1 * dfl,  ####IMPORTANT: should put negative sign : DFL is negative of the depth to flow level, this is because the cost curves are based on depth of cut or fill which is the negative of the DFL
                 bedWidth = bed_width,
                 depthFlow = water_depth,
-                freeboard = freeboard,
+                freeboard = freeboard * freeboard_weight,
                 crossGradient = 0,
                 sides = side_slope,
                 batterSides = 1.5,
@@ -1052,7 +1052,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     # weight_original = make_specific_cost_array(dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost)
     
     weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, dem - contour,bed_width,
-                                                    water_depth,freeboard,additional_per_m_cost, 
+                                                    water_depth,freeboard * freeboard_weight, additional_per_m_cost, 
                                                         rockDepth_raster)
         
     # weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, dem - contour,bed_width,water_depth,freeboard,additional_per_m_cost, rockDepth_raster)
@@ -1062,7 +1062,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
     # with open(f'{output_path}_{target_elev}_weight_with_rock_depth.pkl', 'wb') as f:
     #         pickle.dump(weight, f)
     #this is just to calculate channel dimension, ignore the rockDepth = 5, 
-    properties_earthworks = earthworks.getCostEarthworks(DFL = 0,bedWidth = bed_width, depthFlow = water_depth, freeboard = freeboard,channelLined = False , rockDepth = 5)
+    properties_earthworks = earthworks.getCostEarthworks(DFL = 0,bedWidth = bed_width, depthFlow = water_depth, freeboard = freeboard* freeboard_weight,channelLined = False , rockDepth = 5)
     water_section_area = properties_earthworks['Geometries']['waterSection'].area
     wetted_perimeter = properties_earthworks['Geometries']['wettedPerimeterSection'].length
     water_surface_width = properties_earthworks['Geometries']['waterSection'].bounds[2] - properties_earthworks['Geometries']['waterSection'].bounds[0]
@@ -1113,7 +1113,7 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
         flattened = dem - target_elev - slopeSurface
 
         
-        weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, flattened,bed_width,water_depth,freeboard,additional_per_m_cost, 
+        weight = make_specific_cost_array_withRockDepth(earthWorkCost_curve, flattened,bed_width,water_depth,freeboard* freeboard_weight,additional_per_m_cost, 
                                                             rockDepth_raster)
         
         
