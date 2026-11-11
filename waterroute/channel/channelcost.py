@@ -107,9 +107,11 @@ def costs_calc(CR):
         
         #change above to refer the depth and width dected in channelroute.py, solver, def find_channel_dimension
 
-        reach.freeboard = CR.freeboard * CR.freeboard_weight
+        # reach.freeboard = CR.freeboard * CR.freeboard_weight
         if CR.freeboard is None:
-            reach.freeboard = 0.2 * reach.water_depth + 0.3
+            reach.freeboard = 0.2 * reach.water_depth + 0.3 * CR.freeboard_weight
+        else:
+            reach.freeboard = CR.freeboard * CR.freeboard_weight
 
         #lots of default values here
         reach.earthworks = earthworks.getCostEarthworks(DFL = 0,bedWidth = reach.bed_width, depthFlow = reach.water_depth, 
