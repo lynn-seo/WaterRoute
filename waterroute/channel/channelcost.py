@@ -68,7 +68,7 @@ class Channel_Route:
     OandM_cost:float = 0
     construction_time_years:float = 0
     earthworks_volume_m3_per_year:float = 65 *1E6 #m3 of material moved/placed each year
-    discount_rate:float = 0.07
+    # discount_rate:float = 0.07
     lifetime:float = 100
     annualised_cost_per_saleable_ML:float = 0
         
@@ -442,9 +442,8 @@ def costs_calc(CR):
     CR.total_length_m = CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0]
     CR.final_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1] - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])
 
-    
-
     CR.total_controlled_head_loss_m = CR.siphon_head_loss_m + CR.control_head_loss_m + CR.crossing_head_loss_m + CR.siphon_inlet_outlet_loss_m
+    CR.total_controlled_head_loss_m = CR.total_controlled_head_loss_m * CR.Hydraulic_loss_weight
     CR.adjusted_final_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1]+CR.total_controlled_head_loss_m - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])
     _, V, A = channelroute.trapezoidal_discharge(width=CR.water_surface_width, depth=CR.routing_water_depth, S=abs(CR.adjusted_final_slope), 
                                                  n=CR.mannings_n, z=CR.side_slope)
