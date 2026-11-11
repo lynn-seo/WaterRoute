@@ -1072,12 +1072,12 @@ def elevPath(output_path,dem,aff,crs,targetSlope,start,finish,max_fill_siphon_en
                         lossEachStockDomestic = 2, spacingStockDomestic = 2, leakageRate = 0, channelXSection = water_section_area,rolling_shutdown_factor = 1, 
                         waterDepth= water_depth)
 
-    pd.Series(annual_loss_ML_per_annum, name='ML_per_annum').to_csv(
-        f'{output_path}_{target_elev}_annual_loss.csv',
-        header=True
-    )
+    # pd.Series(annual_loss_ML_per_annum, name='ML_per_annum').to_csv(
+    #     f'{output_path}_{target_elev}_annual_loss.csv',
+    #     header=True
+    # )
 
-    total_loss_ML = annual_loss_ML_per_annum['Total'] 
+    total_loss_ML = annual_loss_ML_per_annum['Total'] * loss_weight
 
     # #addLayer(m,'contour_weight',1/weight,aff,crs,1,10,cm.viridis)
     #earthwork cost factor

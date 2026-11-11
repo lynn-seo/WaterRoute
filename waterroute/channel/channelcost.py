@@ -437,7 +437,7 @@ def costs_calc(CR):
                         lossEachStockDomestic = 2, spacingStockDomestic = 2, leakageRate = 0, channelXSection = CR.water_section_area, 
                         rolling_shutdown_factor = CR.rolling_shutdown_factor, waterDepth=CR.routing_water_depth)
     
-    CR.total_loss_GL_v2 = _total_loss_v2['Total']/1000
+    CR.total_loss_GL_v2 = _total_loss_v2['Total']/1000 * CR.loss_weight
     CR.total_elevation_change_m = CR.profile['flow_level_elevation(m)'].iloc[0] - CR.profile['flow_level_elevation(m)'].iloc[-1]
     CR.total_length_m = CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0]
     CR.final_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1] - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])
