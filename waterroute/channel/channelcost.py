@@ -447,13 +447,13 @@ def costs_calc(CR):
     CR.total_controlled_head_loss_m = CR.siphon_head_loss_m + CR.control_head_loss_m + CR.crossing_head_loss_m + CR.siphon_inlet_outlet_loss_m
     CR.adjusted_final_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1]+CR.total_controlled_head_loss_m - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])
     _, V, A = channelroute.trapezoidal_discharge(width=CR.water_surface_width, depth=CR.routing_water_depth, S=abs(CR.adjusted_final_slope), 
-                                                 n=CR.mannings_n, z=2)
+                                                 n=CR.mannings_n, z=CR.side_slope)
     CR.channel_velocity_m_per_s = V
     # CR.total_annual_loss_GL = CR.total_annual_loss['Total']/1E3
     CR.GL_delivered_per_year = CR.gross_diversions_annual_m3_per_s * 86400 / 1E6 *120 - CR.total_loss_GL_v2
     CR.dollar_per_GL_delivered = (CR.total_cost/1E6) / (CR.GL_delivered_per_year)
-    annualised_capital_cost = -npf.pmt(CR.discount_rate, CR.lifetime, CR.total_cost)
-    CR.annualised_cost_per_saleable_ML = (
-        (annualised_capital_cost + CR.OandM_cost) / (CR.GL_delivered_per_year * 1000)
-    )
+    # annualised_capital_cost = -npf.pmt(CR.discount_rate, CR.lifetime, CR.total_cost)
+    # CR.annualised_cost_per_saleable_ML = (
+    #     (annualised_capital_cost + CR.OandM_cost) / (CR.GL_delivered_per_year * 1000)
+    # )
     
