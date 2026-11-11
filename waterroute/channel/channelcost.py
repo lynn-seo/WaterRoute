@@ -443,7 +443,7 @@ def costs_calc(CR):
     CR.final_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1] - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])
 
     CR.total_controlled_head_loss_m = CR.siphon_head_loss_m + CR.control_head_loss_m + CR.crossing_head_loss_m + CR.siphon_inlet_outlet_loss_m
-    CR.total_controlled_head_loss_m = CR.total_controlled_head_loss_m * CR.Hydraulic_loss_weight
+    CR.total_controlled_head_loss_m = CR.total_controlled_head_loss_m * CR.hydraulic_loss_weight
     CR.adjusted_final_slope = (CR.profile['flow_level_elevation(m)'].iloc[-1]+CR.total_controlled_head_loss_m - CR.profile['flow_level_elevation(m)'].iloc[0]) / (CR.profile['short_distance(m)'].iloc[-1] - CR.profile['short_distance(m)'].iloc[0])
     _, V, A = channelroute.trapezoidal_discharge(width=CR.water_surface_width, depth=CR.routing_water_depth, S=abs(CR.adjusted_final_slope), 
                                                  n=CR.mannings_n, z=CR.side_slope)
