@@ -326,7 +326,8 @@ def run_channel(section='section1', ratio_width_depth=5, run_name=None, target_s
     # Routing options
     CR.routing_contour = 27
     CR.routing_doCrossDrainage = True
-    CR.routing_freeboard = FREEBOARD 
+    # CR.routing_freeboard = 1
+    CR.routing_freeboard = (0.2 * water_depth + 0.3) * CR.freeboard_weight
     CR.routing_additional_per_m_cost = 2000
     CR.lined = False
 

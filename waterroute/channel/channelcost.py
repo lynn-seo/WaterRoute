@@ -109,7 +109,7 @@ def costs_calc(CR):
 
         # reach.freeboard = CR.freeboard * CR.freeboard_weight
         if CR.freeboard is None:
-            reach.freeboard = 0.2 * reach.water_depth + 0.3 * CR.freeboard_weight
+            reach.freeboard = (0.2 * reach.water_depth + 0.3) * CR.freeboard_weight
         else:
             reach.freeboard = CR.freeboard * CR.freeboard_weight
 
