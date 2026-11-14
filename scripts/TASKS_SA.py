@@ -14,7 +14,7 @@ import channel_design
 from channel_design import candidate_designs, route_with_head_loss_iteration
 
 
-PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel/run11"
+PROJECT_ROOT = REPO_ROOT.parent / "elliot_main_channel/run11-1"
 ROUTES_DIR = Path(
     os.environ.get("WATERROUTE_ROUTES_DIR", PROJECT_ROOT)
 ).expanduser().resolve()
@@ -28,7 +28,7 @@ ROCK_DEPTH_PATH = Path(
     os.environ.get("WATERROUTE_ROCK_DEPTH_PATH", REPO_ROOT / "inputs/DEM/low_res_resampled.tif")
 ).expanduser().resolve()
 
-SECTION = "section2"
+SECTION = "section1"
 BASE_VELOCITY = 0.437
 
 
